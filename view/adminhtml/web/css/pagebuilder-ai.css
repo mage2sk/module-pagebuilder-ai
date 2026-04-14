@@ -1,0 +1,68 @@
+.panth-pb-ai-btn {
+    background: #1979c3;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+.panth-pb-ai-btn:hover { background: #1565c0; }
+
+.panth-pb-ai-btn-small {
+    background: #1979c3;
+    color: #fff;
+    border: none;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+.panth-pb-ai-btn-small:hover { background: #1565c0; }
+
+.panth-pb-ai-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 99999;
+}
+.panth-pb-ai-popup {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #fff; border-radius: 8px; width: 600px; max-width: 90vw;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 100000;
+    font-family: 'Open Sans', sans-serif;
+}
+.panth-pb-ai-popup-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid #e0e0e0;
+}
+.panth-pb-ai-popup-header strong { font-size: 15px; color: #303030; }
+.panth-pb-ai-close {
+    background: none; border: none; font-size: 22px; cursor: pointer; color: #999;
+}
+.panth-pb-ai-popup-body { padding: 16px 20px; }
+.panth-pb-ai-popup-body label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+.panth-pb-ai-prompt {
+    width: 100%; padding: 8px; font-size: 12px; border: 1px solid #ccc;
+    border-radius: 4px; font-family: monospace; box-sizing: border-box; resize: vertical;
+}
+.panth-pb-ai-upload { margin-top: 10px; }
+.panth-pb-ai-upload input { font-size: 12px; margin-top: 4px; }
+.panth-pb-ai-preview { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.panth-pb-ai-popup-footer {
+    padding: 12px 20px; border-top: 1px solid #e0e0e0;
+    display: flex; gap: 10px; align-items: center;
+}
+.panth-pb-ai-generate-btn {
+    background: #1979c3; color: #fff; border: none; padding: 8px 20px;
+    border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px;
+}
+.panth-pb-ai-generate-btn:hover { background: #1565c0; }
+.panth-pb-ai-generate-btn:disabled { background: #999; cursor: not-allowed; }
+.panth-pb-ai-cancel-btn {
+    background: #f0f0f0; color: #333; border: 1px solid #ccc; padding: 8px 20px;
+    border-radius: 4px; cursor: pointer; font-size: 13px;
+}
+.panth-pb-ai-status { font-size: 12px; color: #666; }

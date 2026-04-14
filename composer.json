@@ -1,0 +1,49 @@
+{
+    "name": "mage2kishan/module-pagebuilder-ai",
+    "description": "Adds an AI Content button to the Magento PageBuilder toolbar and inline AI buttons to every text/textarea field in PageBuilder edit panels. Uses the Panth_AdvancedSEO AI backend (soft dependency) to generate full-page HTML layouts, section content, and field-level copy from configurable prompts — with optional reference-image upload. Includes page-type presets (Homepage, About, FAQ, Landing, Category, Policy, 404) and saved-prompt support.",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "keywords": [
+        "magento2",
+        "magento2-module",
+        "pagebuilder",
+        "ai",
+        "content-generation",
+        "seo",
+        "openai",
+        "chatgpt",
+        "cms"
+    ],
+    "homepage": "https://kishansavaliya.com",
+    "support": {
+        "email": "kishansavaliyakb@gmail.com",
+        "source": "https://kishansavaliya.com"
+    },
+    "authors": [
+        {
+            "name": "Kishan Savaliya",
+            "email": "kishansavaliyakb@gmail.com",
+            "homepage": "https://kishansavaliya.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "mage2kishan/module-core": "^1.0",
+        "magento/framework": "^103.0",
+        "magento/module-backend": "^102.0",
+        "magento/module-page-builder": "^2.2"
+    },
+    "suggest": {
+        "mage2kishan/module-advanced-seo": "Required for AI content generation backend (AI provider integration, prompt templates, generate endpoint)"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Panth\\PageBuilderAi\\": ""
+        }
+    }
+}
