@@ -2,17 +2,9 @@
 /**
  * Panth_PageBuilderAi initialiser script.
  *
- * Panth_PageBuilderAi is a SOFT consumer of Panth_AdvancedSEO. The PageBuilder
- * AI button calls the AI generation backend that lives in AdvancedSEO. We
- * gracefully degrade (render NOTHING) if AdvancedSEO is not installed, not
- * enabled, or has AI disabled. This template therefore must NEVER fatal even
- * when AdvancedSEO is fully missing.
- *
- * All soft-dependency handling is encapsulated in the AiInit ViewModel, which
- * uses a class_exists() + Module\Manager::isEnabled() + guarded ObjectManager
- * get() pattern. Constructor injection of the AdvancedSEO helper is
- * deliberately NOT used — it would cause a ReflectionException in DI on
- * installations without the optional module.
+ * Supports two modes:
+ *   1. Standalone — uses PageBuilderAi's own AI config and endpoint.
+ *   2. With AdvancedSEO — uses AdvancedSEO's AI backend for richer features.
  *
  * @var \Magento\Backend\Block\Template $block
  * @var \Panth\PageBuilderAi\ViewModel\AiInit $viewModel
@@ -25,9 +17,11 @@ if (!$viewModel instanceof \Panth\PageBuilderAi\ViewModel\AiInit || !$viewModel-
 
 $generateUrl  = $viewModel->getGenerateUrl();
 $savedPrompts = $viewModel->getSavedPrompts();
+$backend      = $viewModel->getActiveBackend();
 ?>
 <script>
 window.panthPageBuilderAiUrl = '<?= $block->escapeJs($generateUrl) ?>';
 window.panthPageBuilderAiPrompts = <?= /* @noEscape */ json_encode($savedPrompts, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS) ?>;
+window.panthPageBuilderAiBackend = '<?= $block->escapeJs($backend) ?>';
 </script>
 <script src="<?= $block->escapeUrl($block->getViewFileUrl('Panth_PageBuilderAi::js/pagebuilder-ai-toolbar.js')) ?>"></script>

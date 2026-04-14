@@ -8,33 +8,27 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Panth\PageBuilderAi\Helper\Config;
 
 /**
  * ViewModel for pagebuilder-ai-init.phtml.
  *
- * Panth_PageBuilderAi is a SOFT consumer of Panth_AdvancedSEO: the module
- * may be physically absent, present-but-disabled, or present-but-AI-disabled.
- * Therefore this ViewModel intentionally does NOT constructor-inject any
- * Panth\AdvancedSEO\* class — doing so would cause Magento DI to throw a
- * ReflectionException at page render when the class is not autoloadable.
+ * Supports two modes:
+ *   1. Standalone — uses PageBuilderAi's own AI config and endpoint.
+ *   2. With AdvancedSEO — uses AdvancedSEO's AI backend and prompt templates.
  *
- * Instead it injects the framework ModuleManager (always present) and falls
- * back to a guarded ObjectManager::get() for the optional helper, behind a
- * class_exists() + isEnabled() gate. This is the idiomatic pattern for a
- * genuine soft optional dependency in Magento 2.
+ * Priority: if PageBuilderAi has its own API key configured, it uses its own
+ * endpoint. Otherwise, falls back to AdvancedSEO if available. This ensures
+ * the module works independently AND alongside AdvancedSEO without conflicts.
  */
 class AiInit implements ArgumentInterface
 {
     private const OPTIONAL_MODULE = 'Panth_AdvancedSEO';
-    private const OPTIONAL_HELPER = \Panth\AdvancedSEO\Helper\Config::class;
+    private const OPTIONAL_HELPER = 'Panth\AdvancedSEO\Helper\Config';
     private const PROMPT_TABLE = 'panth_seo_ai_prompt';
 
-    /**
-     * @var bool|null
-     */
-    private ?bool $availableCache = null;
-
     public function __construct(
+        private readonly Config $config,
         private readonly ModuleManager $moduleManager,
         private readonly UrlInterface $backendUrl,
         private readonly ResourceConnection $resource
@@ -42,53 +36,49 @@ class AiInit implements ArgumentInterface
     }
 
     /**
-     * Returns true only when Panth_AdvancedSEO is installed, enabled, its
-     * Helper class is autoloadable AND AI generation is toggled on in config.
+     * Returns true when the module is enabled.
+     * API key validation happens at generation time, not at render time.
      */
     public function isAvailable(): bool
     {
-        if ($this->availableCache !== null) {
-            return $this->availableCache;
-        }
-
-        if (!$this->moduleManager->isEnabled(self::OPTIONAL_MODULE)) {
-            return $this->availableCache = false;
-        }
-
-        if (!class_exists(self::OPTIONAL_HELPER)) {
-            return $this->availableCache = false;
-        }
-
-        try {
-            // Guarded ObjectManager usage — justified because the target class
-            // may not exist at DI compile time on installations without
-            // Panth_AdvancedSEO. See class docblock.
-            /** @var \Panth\AdvancedSEO\Helper\Config $config */
-            $config = ObjectManager::getInstance()->get(self::OPTIONAL_HELPER);
-            return $this->availableCache = (bool) $config->isAiEnabled();
-        } catch (\Throwable $e) {
-            return $this->availableCache = false;
-        }
+        return $this->config->isEnabled();
     }
 
     /**
-     * Returns the admin URL for the AI generation endpoint.
+     * Returns the AI generation endpoint URL based on which backend is active.
+     * Falls back to own endpoint when AdvancedSEO is not available — the
+     * controller will return a clear error if the API key is not yet configured.
      */
     public function getGenerateUrl(): string
     {
-        return $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
+        if ($this->config->isAdvancedSeoAvailable() && !$this->config->hasOwnApiKey()) {
+            return $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
+        }
+
+        return $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
     }
 
     /**
-     * Loads saved prompt templates for PageBuilder / cms_page usage.
-     *
-     * Returns an empty array on any failure — the prompts are a convenience
-     * feature and must never break the admin page render.
+     * Returns which backend is active: 'own', 'advancedseo', or 'none'.
+     */
+    public function getActiveBackend(): string
+    {
+        return $this->config->getActiveBackend();
+    }
+
+    /**
+     * Loads saved prompt templates from AdvancedSEO (if available).
+     * Returns empty array when running standalone.
      *
      * @return array<int, array{id:int, name:string, template:string}>
      */
     public function getSavedPrompts(): array
     {
+        // Saved prompts only exist in AdvancedSEO's database table
+        if (!$this->moduleManager->isEnabled(self::OPTIONAL_MODULE)) {
+            return [];
+        }
+
         try {
             $conn = $this->resource->getConnection();
             $table = $this->resource->getTableName(self::PROMPT_TABLE);

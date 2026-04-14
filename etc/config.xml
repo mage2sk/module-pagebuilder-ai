@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <panth_pagebuilderai>
+            <general>
+                <enabled>1</enabled>
+            </general>
+            <ai>
+                <provider>openai</provider>
+                <openai_model>gpt-4o</openai_model>
+                <claude_model>claude-sonnet-4-5-20241022</claude_model>
+                <max_tokens>2048</max_tokens>
+                <temperature>0.7</temperature>
+            </ai>
+        </panth_pagebuilderai>
+    </default>
+</config>
