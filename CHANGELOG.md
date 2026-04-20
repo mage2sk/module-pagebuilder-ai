@@ -4,6 +4,28 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.1]
+
+### Fixed
+
+- **`/panth_pagebuilderai/aiprompt/new` and `/aiknowledge/new` 404'd.** The
+  1.1.0 merge added the Edit/Save/Delete/Index controllers but forgot the
+  `NewAction.php` that the admin grid's *Add New* button targets.
+  Added both — each simply forwards to `edit` (which already renders a
+  blank form when no `id` is present). No `__construct` override; they
+  rely on the inherited `$resultFactory` from `AbstractAction` (redeclaring
+  it as readonly in a subclass fails the "Cannot redeclare non-readonly
+  property" engine check).
+- **PageBuilder toolbar "Generate Full Page Content with AI" returned an
+  empty body.** The 1.1.0 refactor routed `Model/AiService::generate()`
+  through the ported `Model/Generator/AdapterFactory`, but those adapters
+  are built for SEO-meta output (they parse the LLM response as JSON and
+  expect `meta_title` / `meta_description` keys). PageBuilder wants raw
+  HTML. Restored `AiService` to the original 1.0.1 inline-cURL flow so
+  the toolbar keeps working. The `AdapterFactory` + adapters remain in
+  place for the admin AI grids (bulk generation / prompts / knowledge)
+  which DO expect structured JSON output.
+
 ## [1.1.0]
 
 ### Added — AI content generation (merged from Panth_AdvancedSEO)
