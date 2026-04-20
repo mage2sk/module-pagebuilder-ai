@@ -10,14 +10,17 @@ use Magento\Framework\Module\Manager as ModuleManager;
 
 class Config extends AbstractHelper
 {
-    private const XML_ENABLED = 'panth_pagebuilderai/general/enabled';
-    private const XML_PROVIDER = 'panth_pagebuilderai/ai/provider';
-    private const XML_OPENAI_KEY = 'panth_pagebuilderai/ai/openai_api_key';
-    private const XML_OPENAI_MODEL = 'panth_pagebuilderai/ai/openai_model';
-    private const XML_CLAUDE_KEY = 'panth_pagebuilderai/ai/claude_api_key';
-    private const XML_CLAUDE_MODEL = 'panth_pagebuilderai/ai/claude_model';
-    private const XML_MAX_TOKENS = 'panth_pagebuilderai/ai/max_tokens';
-    private const XML_TEMPERATURE = 'panth_pagebuilderai/ai/temperature';
+    public const XML_ENABLED = 'panth_pagebuilderai/general/enabled';
+    public const XML_PROVIDER = 'panth_pagebuilderai/ai/provider';
+    public const XML_OPENAI_KEY = 'panth_pagebuilderai/ai/openai_api_key';
+    public const XML_OPENAI_MODEL = 'panth_pagebuilderai/ai/openai_model';
+    public const XML_CLAUDE_KEY = 'panth_pagebuilderai/ai/claude_api_key';
+    public const XML_CLAUDE_MODEL = 'panth_pagebuilderai/ai/claude_model';
+    public const XML_MAX_TOKENS = 'panth_pagebuilderai/ai/max_tokens';
+    public const XML_TEMPERATURE = 'panth_pagebuilderai/ai/temperature';
+    public const XML_MONTHLY_BUDGET = 'panth_pagebuilderai/ai/monthly_budget';
+    public const XML_CACHE_TTL = 'panth_pagebuilderai/ai/cache_ttl';
+    public const XML_TONE = 'panth_pagebuilderai/ai/tone';
 
     public function __construct(
         Context $context,
@@ -71,7 +74,36 @@ class Config extends AbstractHelper
     }
 
     /**
-     * Check if this module has its own API key configured.
+     * Monthly token budget cap for AI generation. 0 means "disabled — reject
+     * all AI calls." The budget is enforced atomically in AbstractHttpAdapter.
+     */
+    public function getMonthlyBudget(): int
+    {
+        return (int) ($this->scopeConfig->getValue(self::XML_MONTHLY_BUDGET) ?: 0);
+    }
+
+    /**
+     * Response cache TTL in seconds. 0 disables caching entirely.
+     */
+    public function getCacheTtl(): int
+    {
+        $raw = $this->scopeConfig->getValue(self::XML_CACHE_TTL);
+        if ($raw === null || $raw === '') {
+            return 0;
+        }
+        return max(0, (int) $raw);
+    }
+
+    /**
+     * Writing tone (used inside AI prompt templates where applicable).
+     */
+    public function getTone(): string
+    {
+        return (string) ($this->scopeConfig->getValue(self::XML_TONE) ?: 'professional');
+    }
+
+    /**
+     * Check if this module has its own API key configured for the selected provider.
      */
     public function hasOwnApiKey(): bool
     {
@@ -86,47 +118,31 @@ class Config extends AbstractHelper
     }
 
     /**
-     * Check if AdvancedSEO module is available with AI enabled.
+     * @deprecated PageBuilderAi now owns the AI backend — AdvancedSEO integration is gone.
+     *             Kept for backward compatibility with any external callers; always returns false.
      */
     public function isAdvancedSeoAvailable(): bool
     {
-        if (!$this->moduleManager->isEnabled('Panth_AdvancedSEO')) {
-            return false;
-        }
-        $helperClass = 'Panth\AdvancedSEO\Helper\Config';
-        if (!class_exists($helperClass)) {
-            return false;
-        }
-        try {
-            $seoConfig = \Magento\Framework\App\ObjectManager::getInstance()->get($helperClass);
-            return (bool) $seoConfig->isAiEnabled();
-        } catch (\Throwable $e) {
-            return false;
-        }
+        return false;
     }
 
     /**
-     * Returns true if AI is available via either own config or AdvancedSEO.
+     * True if AI is configured and usable.
      */
     public function isAiAvailable(): bool
     {
         if (!$this->isEnabled()) {
             return false;
         }
-        return $this->hasOwnApiKey() || $this->isAdvancedSeoAvailable();
+        return $this->hasOwnApiKey();
     }
 
     /**
-     * Determine which backend to use: 'own' or 'advancedseo'.
+     * Which backend is active. After the merge the only possible non-"none"
+     * value is "own". Retained for any callers that dispatched on backend.
      */
     public function getActiveBackend(): string
     {
-        if ($this->hasOwnApiKey()) {
-            return 'own';
-        }
-        if ($this->isAdvancedSeoAvailable()) {
-            return 'advancedseo';
-        }
-        return 'none';
+        return $this->hasOwnApiKey() ? 'own' : 'none';
     }
 }

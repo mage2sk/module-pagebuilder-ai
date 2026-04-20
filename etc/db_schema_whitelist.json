@@ -1,0 +1,110 @@
+{
+    "panth_seo_ai_prompt": {
+        "column": {
+            "prompt_id": true,
+            "name": true,
+            "entity_type": true,
+            "prompt_template": true,
+            "is_default": true,
+            "is_active": true,
+            "sort_order": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PANTH_SEO_AI_PROMPT_IDX_ENTITY_ACTIVE": true,
+            "PANTH_SEO_AI_PROMPT_IDX_DEFAULT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "panth_seo_ai_knowledge": {
+        "column": {
+            "knowledge_id": true,
+            "category": true,
+            "subcategory": true,
+            "title": true,
+            "content": true,
+            "tags": true,
+            "is_active": true,
+            "sort_order": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PANTH_SEO_AI_KNOWLEDGE_IDX_CATEGORY_ACTIVE": true,
+            "PANTH_SEO_AI_KNOWLEDGE_IDX_SUBCATEGORY": true,
+            "PANTH_SEO_AI_KNOWLEDGE_IDX_SORT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "panth_seo_ai_usage": {
+        "column": {
+            "usage_id": true,
+            "provider": true,
+            "model": true,
+            "prompt_tokens": true,
+            "completion_tokens": true,
+            "total_tokens": true,
+            "cost_usd": true,
+            "job_id": true,
+            "period": true,
+            "created_at": true
+        },
+        "index": {
+            "PANTH_SEO_AI_USAGE_IDX_PERIOD": true,
+            "PANTH_SEO_AI_USAGE_IDX_JOB": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "panth_seo_ai_cache": {
+        "column": {
+            "cache_id": true,
+            "cache_key": true,
+            "provider": true,
+            "response": true,
+            "tokens": true,
+            "expires_at": true,
+            "created_at": true
+        },
+        "index": {
+            "PANTH_SEO_AI_CACHE_IDX_EXPIRES": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "PANTH_SEO_AI_CACHE_UNQ_KEY": true
+        }
+    },
+    "panth_seo_generation_job": {
+        "column": {
+            "job_id": true,
+            "uuid": true,
+            "store_id": true,
+            "entity_type": true,
+            "total": true,
+            "processed": true,
+            "failed": true,
+            "status": true,
+            "provider": true,
+            "tokens_used": true,
+            "options": true,
+            "error_message": true,
+            "created_by": true,
+            "prompt_id": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "PANTH_SEO_GENERATION_JOB_IDX_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "PANTH_SEO_GENERATION_JOB_UNQ_UUID": true
+        }
+    }
+}

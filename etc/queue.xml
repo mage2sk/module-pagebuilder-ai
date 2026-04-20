@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/queue.xsd">
+    <broker topic="panth_pagebuilderai.generate_meta" exchange="panth_pagebuilderai.exchange" type="db">
+        <queue name="panth_pagebuilderai.generate_meta.q"
+               consumer="panth_pagebuilderai.generate_meta.consumer"
+               consumerInstance="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer"
+               handler="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer::process"/>
+    </broker>
+</config>

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!--
+        Third-party Panth module AI integrations.
+
+        SAFE: Magento silently ignores plugin declarations whose target class
+        does not exist during DI compilation. Each plugin also performs a
+        class_exists() check as a defensive safety net.
+    -->
+
+    <!-- FAQ: AI buttons on FAQ item edit form -->
+    <type name="Panth\Faq\Model\Item\DataProvider">
+        <plugin name="panth_pagebuilderai_faq_item_ai"
+                type="Panth\PageBuilderAi\Plugin\ThirdParty\FaqItemAiPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!-- Testimonials: AI buttons on testimonial edit form -->
+    <type name="Panth\Testimonials\Model\Testimonial\DataProvider">
+        <plugin name="panth_pagebuilderai_testimonial_ai"
+                type="Panth\PageBuilderAi\Plugin\ThirdParty\TestimonialAiPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!-- BannerSlider: AI buttons on slide edit form -->
+    <type name="Panth\BannerSlider\Ui\DataProvider\SlideFormDataProvider">
+        <plugin name="panth_pagebuilderai_banner_slide_ai"
+                type="Panth\PageBuilderAi\Plugin\ThirdParty\BannerSlideAiPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!-- DynamicForms: AI buttons on form edit page -->
+    <type name="Panth\DynamicForms\Ui\DataProvider\FormDataProvider">
+        <plugin name="panth_pagebuilderai_dynamic_form_ai"
+                type="Panth\PageBuilderAi\Plugin\ThirdParty\DynamicFormAiPlugin"
+                sortOrder="100"/>
+    </type>
+</config>

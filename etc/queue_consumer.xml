@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/consumer.xsd">
+    <consumer name="panth_pagebuilderai.generate_meta.consumer"
+              queue="panth_pagebuilderai.generate_meta.q"
+              connection="db"
+              maxMessages="500"
+              consumerInstance="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer"
+              handler="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer::process"/>
+</config>

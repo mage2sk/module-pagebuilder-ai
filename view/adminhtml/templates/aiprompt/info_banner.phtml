@@ -1,0 +1,14 @@
+<?php /** @var \Magento\Backend\Block\Template $block */ ?>
+<div style="background:#E3F2FD;border:1px solid #1976D2;border-radius:4px;padding:15px 20px;margin-bottom:20px;font-size:13px;line-height:1.7;">
+    <strong style="font-size:14px;color:#1565C0;"><?= $block->escapeHtml(__('How AI Prompts Work')) ?></strong>
+    <p style="margin:8px 0 0;">
+        <?= $block->escapeHtml(__('AI Prompts are the instructions sent to the AI provider (Claude, OpenAI, etc.) when generating meta titles, descriptions and PageBuilder content.')) ?>
+        <?= $block->escapeHtml(__('Each prompt is a template with placeholders like {{name}}, {{sku}}, {{price}} that get replaced with actual entity data before being sent to the AI.')) ?>
+    </p>
+    <ol style="margin:8px 0 0;padding-left:20px;">
+        <li><?= $block->escapeHtml(__('Create or edit prompts for different entity types (Product, Category, CMS Page, PageBuilder).')) ?></li>
+        <li><?= $block->escapeHtml(__('Mark one prompt as "Default" per entity type — it will be used automatically for AI generation jobs.')) ?></li>
+        <li><?= $block->escapeHtml(__('Customize the tone, rules, and output format to match your brand and SEO strategy.')) ?></li>
+        <li><?= $block->escapeHtml(__('The prompt must instruct the AI to return strict JSON, e.g. {"meta_title":"...","meta_description":"..."}')) ?></li>
+    </ol>
+</div>

@@ -61,6 +61,20 @@
                     <label>Temperature</label>
                     <comment>0.0 = deterministic, 0.7 = balanced, 1.0 = creative. Default: 0.7</comment>
                 </field>
+                <field id="monthly_budget" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Monthly Token Budget</label>
+                    <validate>validate-digits</validate>
+                    <comment><![CDATA[Maximum tokens the AI can consume per month across all generation requests. 1,000,000 tokens is enough to generate meta for ~3,000-5,000 products. A value of 0 disables AI generation entirely (requests are rejected). Budget is enforced atomically to prevent overspend from concurrent requests.]]></comment>
+                </field>
+                <field id="cache_ttl" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Response Cache TTL (seconds)</label>
+                    <validate>validate-digits</validate>
+                    <comment><![CDATA[How long to cache AI responses to avoid re-generating for the same prompt. Default: 2592000 (30 days). Set to 0 to disable caching (not recommended — increases API costs).]]></comment>
+                </field>
+                <field id="tone" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Writing Tone</label>
+                    <comment><![CDATA[The tone/style for generated text. Examples: <code>professional</code>, <code>casual</code>, <code>enthusiastic</code>, <code>technical</code>, <code>luxury</code>, <code>friendly</code>. This is sent as part of the AI prompt to guide the writing style.]]></comment>
+                </field>
             </group>
         </section>
     </system>

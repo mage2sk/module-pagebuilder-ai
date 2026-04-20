@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">panth_pagebuilderai_ai_prompt_form.panth_pagebuilderai_ai_prompt_form_data_source</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="delete" class="Panth\PageBuilderAi\Block\Adminhtml\GenericDeleteButton"/>
+            <button name="save_and_continue" class="Panth\PageBuilderAi\Block\Adminhtml\AiPrompt\Edit\SaveAndContinueButton"/>
+            <button name="save" class="Panth\PageBuilderAi\Block\Adminhtml\AiPrompt\Edit\SaveButton"/>
+            <button name="back" class="Panth\PageBuilderAi\Block\Adminhtml\AiPrompt\Edit\BackButton"/>
+        </buttons>
+        <namespace>panth_pagebuilderai_ai_prompt_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>panth_pagebuilderai_ai_prompt_form.panth_pagebuilderai_ai_prompt_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="panth_pagebuilderai_ai_prompt_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="panth_pagebuilderai/aiprompt/save"/>
+        </settings>
+        <dataProvider class="Panth\PageBuilderAi\Ui\Component\Form\DataProvider\AiPromptFormDataProvider" name="panth_pagebuilderai_ai_prompt_form_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>prompt_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <!-- ========== General ========== -->
+    <fieldset name="general" sortOrder="10">
+        <settings>
+            <label translate="true">General</label>
+        </settings>
+        <field name="prompt_id" formElement="input">
+            <settings>
+                <visible>false</visible>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="name" formElement="input" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Name</label>
+                <dataScope>name</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="entity_type" formElement="select" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Entity Type</label>
+                <dataScope>entity_type</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options>
+                            <option name="product" xsi:type="array">
+                                <item name="value" xsi:type="string">product</item>
+                                <item name="label" xsi:type="string" translate="true">Product</item>
+                            </option>
+                            <option name="category" xsi:type="array">
+                                <item name="value" xsi:type="string">category</item>
+                                <item name="label" xsi:type="string" translate="true">Category</item>
+                            </option>
+                            <option name="cms_page" xsi:type="array">
+                                <item name="value" xsi:type="string">cms_page</item>
+                                <item name="label" xsi:type="string" translate="true">CMS Page</item>
+                            </option>
+                            <option name="all" xsi:type="array">
+                                <item name="value" xsi:type="string">all</item>
+                                <item name="label" xsi:type="string" translate="true">All Entity Types</item>
+                            </option>
+                        </options>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="is_active" formElement="checkbox" sortOrder="30">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Active</label>
+                <dataScope>is_active</dataScope>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="is_default" formElement="checkbox" sortOrder="40">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Default Prompt</label>
+                <dataScope>is_default</dataScope>
+                <notice translate="true">Mark this as the default prompt for the selected entity type. Only one prompt per entity type can be the default. Saving will unset any other default for that entity type.</notice>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="sort_order" formElement="input" sortOrder="50">
+            <settings>
+                <dataType>number</dataType>
+                <label translate="true">Sort Order</label>
+                <dataScope>sort_order</dataScope>
+                <notice translate="true">Lower values appear first in selection lists.</notice>
+            </settings>
+        </field>
+    </fieldset>
+
+    <!-- ========== Prompt Template ========== -->
+    <fieldset name="prompt_template_fieldset" sortOrder="20">
+        <settings>
+            <label translate="true">Prompt Template</label>
+        </settings>
+        <field name="prompt_template" formElement="textarea" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Prompt Template</label>
+                <dataScope>prompt_template</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <notice translate="true">Write the AI prompt using placeholders like {{name}}, {{sku}}, {{price}}, etc. The prompt MUST instruct the AI to return JSON: {"title":"...","description":"..."}. See the "Available Placeholders" section below for all supported tokens.</notice>
+            </settings>
+            <formElements>
+                <textarea>
+                    <settings>
+                        <rows>15</rows>
+                        <cols>80</cols>
+                    </settings>
+                </textarea>
+            </formElements>
+        </field>
+    </fieldset>
+
+    <!-- ========== Available Placeholders Reference ========== -->
+    <htmlContent name="placeholders_reference" sortOrder="30">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Available Placeholders</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="opened" xsi:type="boolean">false</item>
+            </item>
+        </argument>
+        <block class="Panth\PageBuilderAi\Block\Adminhtml\AiPrompt\Edit\PlaceholdersReference" name="panth_pagebuilderai_ai_prompt_placeholders"/>
+    </htmlContent>
+</form>

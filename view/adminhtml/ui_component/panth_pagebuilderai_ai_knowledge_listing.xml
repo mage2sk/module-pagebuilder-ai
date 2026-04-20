@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">panth_pagebuilderai_ai_knowledge_listing.panth_pagebuilderai_ai_knowledge_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>panth_pagebuilderai_ai_knowledge_listing_columns</spinner>
+        <deps>
+            <dep>panth_pagebuilderai_ai_knowledge_listing.panth_pagebuilderai_ai_knowledge_listing_data_source</dep>
+        </deps>
+        <buttons>
+            <button name="import">
+                <url path="*/*/import"/>
+                <class>action-secondary</class>
+                <label translate="true">Import/Refresh Training Data</label>
+            </button>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add New Knowledge Entry</label>
+            </button>
+        </buttons>
+    </settings>
+    <dataSource name="panth_pagebuilderai_ai_knowledge_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">knowledge_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="panth_pagebuilderai_ai_knowledge_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>knowledge_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="panth_pagebuilderai_ai_knowledge_listing_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>knowledge_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="knowledge_id">
+            <settings>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="title">
+            <settings>
+                <label translate="true">Title</label>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="category">
+            <settings>
+                <label translate="true">Category</label>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <options class="Panth\PageBuilderAi\Model\Source\AiKnowledgeCategory"/>
+            </settings>
+        </column>
+        <column name="subcategory">
+            <settings>
+                <label translate="true">Subcategory</label>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="tags">
+            <settings>
+                <label translate="true">Tags</label>
+                <filter>text</filter>
+            </settings>
+        </column>
+        <column name="is_active" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <label translate="true">Active</label>
+                <dataType>select</dataType>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+            </settings>
+        </column>
+        <column name="sort_order">
+            <settings>
+                <label translate="true">Sort Order</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Panth\PageBuilderAi\Ui\Component\Listing\Column\AiKnowledgeActions">
+            <settings>
+                <indexField>knowledge_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

@@ -12,6 +12,7 @@ class AiProvider implements OptionSourceInterface
         return [
             ['value' => 'openai', 'label' => __('OpenAI (GPT-4o)')],
             ['value' => 'claude', 'label' => __('Anthropic Claude')],
+            ['value' => 'null',   'label' => __('Disabled (None)')],
         ];
     }
 }

@@ -1,0 +1,31 @@
+<?php
+/** @var \Panth\PageBuilderAi\Block\Adminhtml\AiSettings $block */
+?>
+<div class="panth-pagebuilderai-ai-settings" style="padding: 20px;">
+    <h2><?= $block->escapeHtml(__('AI Content Generation Settings')) ?></h2>
+
+    <p style="margin: 15px 0; color: #666;">
+        <?= $block->escapeHtml(__('Configure AI providers and generation settings for PageBuilder / meta content generation.')) ?>
+    </p>
+
+    <div style="margin: 30px 0;">
+        <h3><?= $block->escapeHtml(__('Quick Links')) ?></h3>
+        <ul style="list-style: none; padding: 0; margin: 15px 0;">
+            <li style="margin: 10px 0;">
+                <a href="<?= $block->escapeUrl($block->getConfigUrl()) ?>" class="action-default">
+                    <span><?= $block->escapeHtml(__('Open System Configuration (AI Provider, API Keys, Model Settings)')) ?></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div style="margin: 30px 0;">
+        <h3><?= $block->escapeHtml(__('AI Generation Jobs')) ?></h3>
+        <p style="color: #666; margin: 10px 0;">
+            <?= $block->escapeHtml(__('View and manage AI generation jobs from the listing below.')) ?>
+        </p>
+        <a href="<?= $block->escapeUrl($block->getJobsUrl()) ?>" class="action-default">
+            <span><?= $block->escapeHtml(__('View Generation Jobs')) ?></span>
+        </a>
+    </div>
+</div>

@@ -4,34 +4,25 @@ declare(strict_types=1);
 namespace Panth\PageBuilderAi\ViewModel;
 
 use Magento\Backend\Model\UrlInterface;
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 use Panth\PageBuilderAi\Helper\Config;
+use Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\CollectionFactory as AiPromptCollectionFactory;
+use Psr\Log\LoggerInterface;
 
 /**
  * ViewModel for pagebuilder-ai-init.phtml.
  *
- * Supports two modes:
- *   1. Standalone — uses PageBuilderAi's own AI config and endpoint.
- *   2. With AdvancedSEO — uses AdvancedSEO's AI backend and prompt templates.
- *
- * Priority: if PageBuilderAi has its own API key configured, it uses its own
- * endpoint. Otherwise, falls back to AdvancedSEO if available. This ensures
- * the module works independently AND alongside AdvancedSEO without conflicts.
+ * After the AdvancedSEO AI merge, PageBuilderAi is the sole owner of the AI
+ * backend. This class only deals with its own endpoint + its own prompt
+ * collection.
  */
 class AiInit implements ArgumentInterface
 {
-    private const OPTIONAL_MODULE = 'Panth_AdvancedSEO';
-    private const OPTIONAL_HELPER = 'Panth\AdvancedSEO\Helper\Config';
-    private const PROMPT_TABLE = 'panth_seo_ai_prompt';
-
     public function __construct(
         private readonly Config $config,
-        private readonly ModuleManager $moduleManager,
         private readonly UrlInterface $backendUrl,
-        private readonly ResourceConnection $resource
+        private readonly AiPromptCollectionFactory $promptCollectionFactory,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -45,21 +36,15 @@ class AiInit implements ArgumentInterface
     }
 
     /**
-     * Returns the AI generation endpoint URL based on which backend is active.
-     * Falls back to own endpoint when AdvancedSEO is not available — the
-     * controller will return a clear error if the API key is not yet configured.
+     * AI generation endpoint URL.
      */
     public function getGenerateUrl(): string
     {
-        if ($this->config->isAdvancedSeoAvailable() && !$this->config->hasOwnApiKey()) {
-            return $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
-        }
-
         return $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
     }
 
     /**
-     * Returns which backend is active: 'own', 'advancedseo', or 'none'.
+     * Kept for backward compatibility: 'own' or 'none'.
      */
     public function getActiveBackend(): string
     {
@@ -67,44 +52,33 @@ class AiInit implements ArgumentInterface
     }
 
     /**
-     * Loads saved prompt templates from AdvancedSEO (if available).
-     * Returns empty array when running standalone.
+     * Loads saved prompt templates for cms_page / pagebuilder / all entity types.
+     *
+     * Uses the Repository-style Collection instead of raw SQL so the read path
+     * is clean and refactor-safe.
      *
      * @return array<int, array{id:int, name:string, template:string}>
      */
     public function getSavedPrompts(): array
     {
-        // Saved prompts only exist in AdvancedSEO's database table
-        if (!$this->moduleManager->isEnabled(self::OPTIONAL_MODULE)) {
-            return [];
-        }
-
         try {
-            $conn = $this->resource->getConnection();
-            $table = $this->resource->getTableName(self::PROMPT_TABLE);
-            if (!$conn->isTableExists($table)) {
-                return [];
-            }
-
-            $rows = $conn->fetchAll(
-                $conn->select()
-                    ->from($table, ['prompt_id', 'name', 'prompt_template', 'is_default'])
-                    ->where('is_active = 1')
-                    ->where('entity_type IN (?)', ['cms_page', 'all', 'pagebuilder'])
-                    ->order('is_default DESC')
-                    ->order('sort_order ASC')
-            );
+            $collection = $this->promptCollectionFactory->create();
+            $collection->addFieldToFilter('is_active', 1);
+            $collection->addFieldToFilter('entity_type', ['in' => ['cms_page', 'all', 'pagebuilder']]);
+            $collection->setOrder('is_default', 'DESC');
+            $collection->setOrder('sort_order', 'ASC');
 
             $prompts = [];
-            foreach ($rows as $row) {
+            foreach ($collection as $item) {
                 $prompts[] = [
-                    'id' => (int) $row['prompt_id'],
-                    'name' => (string) $row['name'],
-                    'template' => (string) $row['prompt_template'],
+                    'id'       => (int) $item->getData('prompt_id'),
+                    'name'     => (string) $item->getData('name'),
+                    'template' => (string) $item->getData('prompt_template'),
                 ];
             }
             return $prompts;
         } catch (\Throwable $e) {
+            $this->logger->warning('Panth PageBuilderAi: failed to load saved prompts: ' . $e->getMessage());
             return [];
         }
     }

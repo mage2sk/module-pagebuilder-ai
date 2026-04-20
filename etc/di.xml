@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- AI generator: factory dispatches on panth_pagebuilderai/ai/provider -->
+    <preference for="Panth\PageBuilderAi\Api\AiGeneratorInterface"
+                type="Panth\PageBuilderAi\Model\Generator\AdapterFactory"/>
+
+    <!-- Grid collection bindings: table + resource model -->
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_ai_prompt</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiPrompt</argument>
+        </arguments>
+    </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_ai_knowledge</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge</argument>
+        </arguments>
+    </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_generation_job</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob</argument>
+        </arguments>
+    </type>
+
+    <!-- UI grid data source registrations (must match the <dataSource name="..."> in the listing XMLs). -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="panth_pagebuilderai_ai_prompt_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\Grid\Collection</item>
+                <item name="panth_pagebuilderai_ai_knowledge_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge\Grid\Collection</item>
+                <item name="panth_pagebuilderai_generation_job_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

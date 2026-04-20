@@ -3,6 +3,12 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
+                <!--
+                    System-config section resource.
+                    This is the ONLY location where Panth_PageBuilderAi::config may be declared;
+                    it must never also appear under Panth_Core::panth_extensions (duplicate resource ids
+                    fail the uniqueResourceId XSD check).
+                -->
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">
                         <resource id="Magento_Config::config">
@@ -10,7 +16,21 @@
                         </resource>
                     </resource>
                 </resource>
-                <resource id="Panth_PageBuilderAi::generate" title="PageBuilder AI Generate" sortOrder="90"/>
+
+                <!--
+                    Admin routes / menu resources.
+                    Parent ai_manage groups every AI-related sub-resource so an admin role can be
+                    granted "AI" access in one checkbox.
+                -->
+                <resource id="Panth_PageBuilderAi::ai_manage" title="PageBuilder AI" sortOrder="90">
+                    <resource id="Panth_PageBuilderAi::ai_generate" title="Generate with AI" sortOrder="10"/>
+                    <resource id="Panth_PageBuilderAi::ai_jobs" title="AI Generation Jobs" sortOrder="20"/>
+                    <resource id="Panth_PageBuilderAi::ai_prompts" title="AI Prompts" sortOrder="30"/>
+                    <resource id="Panth_PageBuilderAi::ai_knowledge" title="AI Knowledge Base" sortOrder="40"/>
+                </resource>
+
+                <!-- Legacy standalone resource — still used by Controller\Adminhtml\Generate\Index. -->
+                <resource id="Panth_PageBuilderAi::generate" title="PageBuilder AI Generate" sortOrder="95"/>
             </resource>
         </resources>
     </acl>

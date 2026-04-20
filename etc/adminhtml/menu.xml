@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Panth PageBuilder AI — Admin menu.
+ * Adds the AI Generation Jobs, AI Prompts and AI Knowledge Base links
+ * under the shared Panth Infotech menu.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Panth_PageBuilderAi::ai_jobs"
+             title="AI Generation Jobs"
+             module="Panth_PageBuilderAi"
+             sortOrder="80"
+             parent="Panth_Core::panth_extensions"
+             action="panth_pagebuilderai/aisettings/jobs"
+             resource="Panth_PageBuilderAi::ai_jobs"/>
+
+        <add id="Panth_PageBuilderAi::ai_prompts"
+             title="AI Prompts"
+             module="Panth_PageBuilderAi"
+             sortOrder="82"
+             parent="Panth_Core::panth_extensions"
+             action="panth_pagebuilderai/aiprompt/index"
+             resource="Panth_PageBuilderAi::ai_prompts"/>
+
+        <add id="Panth_PageBuilderAi::ai_knowledge"
+             title="AI Knowledge Base"
+             module="Panth_PageBuilderAi"
+             sortOrder="84"
+             parent="Panth_Core::panth_extensions"
+             action="panth_pagebuilderai/aiknowledge/index"
+             resource="Panth_PageBuilderAi::ai_knowledge"/>
+    </menu>
+</config>

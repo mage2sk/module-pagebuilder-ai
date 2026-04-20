@@ -4,6 +4,70 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0]
+
+### Added — AI content generation (merged from Panth_AdvancedSEO)
+
+- **Generator adapter layer** — `Model/Generator/{AbstractHttpAdapter,
+  AdapterFactory, ClaudeAdapter, OpenAiAdapter, NullAdapter}.php`. Replaces
+  the previous inline HTTP calls in `Model/AiService.php` with a proper
+  factory pattern so additional providers can be plugged in without
+  touching the service class. SSRF allowlist (`api.anthropic.com`,
+  `api.openai.com`) preserved.
+- **5 AI tables** provisioned via `etc/db_schema.xml` +
+  `etc/db_schema_whitelist.json`:
+  `panth_seo_ai_prompt`, `panth_seo_ai_knowledge`, `panth_seo_ai_usage`,
+  `panth_seo_ai_cache`, `panth_seo_generation_job`. Table names kept as
+  `panth_seo_ai_*` to preserve existing data on stores migrating from
+  Panth_AdvancedSEO.
+- **Admin grids & forms** at *Panth Infotech → AI Prompts / AI Knowledge
+  Base / AI Generation Jobs* — 5 UI components
+  (`panth_pagebuilderai_ai_prompt_listing/form`,
+  `panth_pagebuilderai_ai_knowledge_listing/form`,
+  `panth_pagebuilderai_generation_job_listing`), 6 admin layouts, 13
+  admin controllers under `Controller/Adminhtml/{AiPrompt,AiKnowledge,
+  AiSettings,AiGenerate}/`, plus `Block/Adminhtml/AiSettings.php`,
+  `Block/Adminhtml/AiPrompt/Edit/PlaceholdersReference.php`, and
+  `Model/Admin/AiButtonRenderer.php`.
+- **Config** under `panth_pagebuilderai/ai/*` extended with 3 new fields
+  migrated from AdvancedSEO: `monthly_budget` (default 1,000,000 tokens),
+  `cache_ttl` (default 2,592,000 seconds / 30 days), `tone` (default
+  `professional`). Existing `provider` / `openai_api_key` /
+  `claude_api_key` / `openai_model` / `claude_model` / `max_tokens` /
+  `temperature` unchanged.
+- **Queue topology** — `etc/queue_publisher.xml`,
+  `etc/queue_consumer.xml`, `etc/communication.xml` for async bulk
+  generation. Consumer at `Model/Queue/BulkGenerateConsumer.php`. Topic
+  renamed from `panth_seo.generate_meta` to
+  `panth_pagebuilderai.generate_meta` to reflect new ownership.
+- **3rd-party AI plugins** — `Plugin/ThirdParty/{BannerSlideAiPlugin,
+  DynamicFormAiPlugin, FaqItemAiPlugin, TestimonialAiPlugin}.php` inject
+  AI-generated content into Panth_BannerSlider, Panth_DynamicForms,
+  Panth_Faq, and Panth_Testimonials admin forms when those modules are
+  installed.
+- **Data patches** — 1 schema patch + 2 data patches + 10 data files
+  under `Setup/Data/` covering accessibility HTML, conversion copywriting,
+  e-commerce, Panth modules (4 batches), PageBuilder, response format,
+  and SEO technical knowledge.
+- **Helper/Config.php** extended with the new constants + getters; kept
+  backward-compatible with the previously-present `isEnabled()` /
+  `getProvider()` / `getOpenAiApiKey()` etc.
+- **`ViewModel/AiInit.php`** refactored: the previous raw-SQL read of
+  `panth_seo_ai_prompt` (which coupled this module to AdvancedSEO's
+  internals) now goes through `Model/ResourceModel/AiPrompt/Collection`
+  — clean dependency contract, no cross-module table knowledge.
+- **ACL, menu, routes** — 3 new ACL resources (`Panth_PageBuilderAi::
+  ai_prompts`, `::ai_knowledge`, `::ai_jobs`), 3 new menu items under
+  *Panth Infotech*, admin frontName `panth_pagebuilderai` extended with
+  the new controller paths.
+
+### Notes
+
+- Total module size grew from 21 → ~95 files.
+- The AI code is no longer coupled to `Panth_AdvancedSEO`. Stores running
+  both modules should remove `Panth_AdvancedSEO::ai*` resources and the
+  `panth_seo/ai/*` config group in a follow-up AdvancedSEO release.
+
 ## [1.0.0] — Initial release
 
 ### Added — toolbar AI button

@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+    Panth PageBuilder AI — schema.
+
+    Table names are intentionally kept under the legacy `panth_seo_*` prefix
+    so installations upgrading from Panth_AdvancedSEO do not need to migrate
+    data — the rows are simply taken over by this module.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <!-- ============================================================ -->
+    <!-- panth_seo_ai_prompt                                            -->
+    <!-- ============================================================ -->
+    <table name="panth_seo_ai_prompt" resource="default" engine="innodb" comment="AI Prompt Templates for Meta Generation">
+        <column xsi:type="int" name="prompt_id" unsigned="true" nullable="false" identity="true" comment="Prompt ID"/>
+        <column xsi:type="varchar" name="name" length="255" nullable="false" comment="Prompt name"/>
+        <column xsi:type="varchar" name="entity_type" length="32" nullable="false" default="product" comment="Entity type: product|category|cms_page|all"/>
+        <column xsi:type="mediumtext" name="prompt_template" nullable="false" comment="Prompt template text with placeholders"/>
+        <column xsi:type="boolean" name="is_default" nullable="false" default="false" comment="Default prompt for entity type"/>
+        <column xsi:type="boolean" name="is_active" nullable="false" default="true" comment="Active"/>
+        <column xsi:type="int" name="sort_order" unsigned="true" nullable="false" default="0" comment="Sort order"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="prompt_id"/>
+        </constraint>
+        <index referenceId="PANTH_SEO_AI_PROMPT_IDX_ENTITY_ACTIVE" indexType="btree">
+            <column name="entity_type"/>
+            <column name="is_active"/>
+        </index>
+        <index referenceId="PANTH_SEO_AI_PROMPT_IDX_DEFAULT" indexType="btree">
+            <column name="is_default"/>
+        </index>
+    </table>
+
+    <!-- ============================================================ -->
+    <!-- panth_seo_ai_knowledge                                         -->
+    <!-- ============================================================ -->
+    <table name="panth_seo_ai_knowledge" resource="default" engine="innodb" comment="AI Knowledge Base for Content Generation Context">
+        <column xsi:type="int" name="knowledge_id" unsigned="true" nullable="false" identity="true" comment="Knowledge ID"/>
+        <column xsi:type="varchar" name="category" length="64" nullable="false" comment="Category: pagebuilder, seo, ecommerce, accessibility, html_patterns"/>
+        <column xsi:type="varchar" name="subcategory" length="128" nullable="true" comment="Subcategory: row_component, heading_component, etc."/>
+        <column xsi:type="varchar" name="title" length="255" nullable="false" comment="Short title for admin grid"/>
+        <column xsi:type="mediumtext" name="content" nullable="false" comment="The actual knowledge/instruction text"/>
+        <column xsi:type="varchar" name="tags" length="512" nullable="true" comment="Comma-separated tags for matching"/>
+        <column xsi:type="boolean" name="is_active" nullable="false" default="true" comment="Active"/>
+        <column xsi:type="int" name="sort_order" unsigned="true" nullable="false" default="0" comment="Sort order"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="knowledge_id"/>
+        </constraint>
+        <index referenceId="PANTH_SEO_AI_KNOWLEDGE_IDX_CATEGORY_ACTIVE" indexType="btree">
+            <column name="category"/>
+            <column name="is_active"/>
+        </index>
+        <index referenceId="PANTH_SEO_AI_KNOWLEDGE_IDX_SUBCATEGORY" indexType="btree">
+            <column name="subcategory"/>
+        </index>
+        <index referenceId="PANTH_SEO_AI_KNOWLEDGE_IDX_SORT" indexType="btree">
+            <column name="sort_order"/>
+        </index>
+    </table>
+
+    <!-- ============================================================ -->
+    <!-- panth_seo_ai_usage                                             -->
+    <!-- ============================================================ -->
+    <table name="panth_seo_ai_usage" resource="default" engine="innodb" comment="AI token usage ledger">
+        <column xsi:type="int" name="usage_id" unsigned="true" nullable="false" identity="true" comment="Usage ID"/>
+        <column xsi:type="varchar" name="provider" length="32" nullable="false" comment="Provider"/>
+        <column xsi:type="varchar" name="model" length="64" nullable="true" comment="Model"/>
+        <column xsi:type="int" name="prompt_tokens" unsigned="true" nullable="false" default="0" comment="Prompt tokens"/>
+        <column xsi:type="int" name="completion_tokens" unsigned="true" nullable="false" default="0" comment="Completion tokens"/>
+        <column xsi:type="int" name="total_tokens" unsigned="true" nullable="false" default="0" comment="Total tokens"/>
+        <column xsi:type="decimal" name="cost_usd" scale="6" precision="12" nullable="false" default="0" comment="Cost USD"/>
+        <column xsi:type="int" name="job_id" unsigned="true" nullable="true" comment="Generation job id"/>
+        <column xsi:type="varchar" name="period" length="7" nullable="false" comment="YYYY-MM period"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="usage_id"/>
+        </constraint>
+        <index referenceId="PANTH_SEO_AI_USAGE_IDX_PERIOD" indexType="btree">
+            <column name="period"/>
+        </index>
+        <index referenceId="PANTH_SEO_AI_USAGE_IDX_JOB" indexType="btree">
+            <column name="job_id"/>
+        </index>
+    </table>
+
+    <!-- ============================================================ -->
+    <!-- panth_seo_ai_cache                                             -->
+    <!-- ============================================================ -->
+    <table name="panth_seo_ai_cache" resource="default" engine="innodb" comment="AI response cache">
+        <column xsi:type="int" name="cache_id" unsigned="true" nullable="false" identity="true" comment="Cache ID"/>
+        <column xsi:type="varchar" name="cache_key" length="64" nullable="false" comment="SHA256 key"/>
+        <column xsi:type="varchar" name="provider" length="32" nullable="false" comment="Provider"/>
+        <column xsi:type="mediumtext" name="response" nullable="false" comment="JSON response"/>
+        <column xsi:type="int" name="tokens" unsigned="true" nullable="false" default="0" comment="Tokens"/>
+        <column xsi:type="int" name="expires_at" unsigned="true" nullable="false" default="0" comment="Expiry timestamp"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="cache_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="PANTH_SEO_AI_CACHE_UNQ_KEY">
+            <column name="cache_key"/>
+        </constraint>
+        <index referenceId="PANTH_SEO_AI_CACHE_IDX_EXPIRES" indexType="btree">
+            <column name="expires_at"/>
+        </index>
+    </table>
+
+    <!-- ============================================================ -->
+    <!-- panth_seo_generation_job                                       -->
+    <!-- ============================================================ -->
+    <table name="panth_seo_generation_job" resource="default" engine="innodb" comment="AI generation jobs">
+        <column xsi:type="int" name="job_id" unsigned="true" nullable="false" identity="true" comment="Job ID"/>
+        <column xsi:type="varchar" name="uuid" length="36" nullable="false" comment="UUID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" default="0" comment="Store ID"/>
+        <column xsi:type="varchar" name="entity_type" length="32" nullable="false" comment="Entity type"/>
+        <column xsi:type="int" name="total" unsigned="true" nullable="false" default="0" comment="Total items"/>
+        <column xsi:type="int" name="processed" unsigned="true" nullable="false" default="0" comment="Processed items"/>
+        <column xsi:type="int" name="failed" unsigned="true" nullable="false" default="0" comment="Failed items"/>
+        <column xsi:type="varchar" name="status" length="16" nullable="false" default="pending" comment="pending|running|done|error|cancelled"/>
+        <column xsi:type="varchar" name="provider" length="32" nullable="true" comment="AI provider used"/>
+        <column xsi:type="int" name="tokens_used" unsigned="true" nullable="false" default="0" comment="Tokens used"/>
+        <column xsi:type="text" name="options" nullable="true" comment="JSON options"/>
+        <column xsi:type="text" name="error_message" nullable="true" comment="Error message"/>
+        <column xsi:type="int" name="created_by" unsigned="true" nullable="true" comment="Admin user id"/>
+        <column xsi:type="int" name="prompt_id" unsigned="true" nullable="true" comment="AI prompt used for generation"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="job_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="PANTH_SEO_GENERATION_JOB_UNQ_UUID">
+            <column name="uuid"/>
+        </constraint>
+        <index referenceId="PANTH_SEO_GENERATION_JOB_IDX_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
+</schema>
