@@ -4,6 +4,17 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.2]
+
+### Fixed
+- **AiPrompt / AiKnowledge edit form 500'd on `new` with
+  `ReflectionException: Class Panth\PageBuilderAi\Block\Adminhtml\GenericDeleteButton does not exist`.**
+  The 1.1.0 merge copied the UI component XMLs (which reference the 4
+  Generic button classes `GenericBackButton`, `GenericSaveButton`,
+  `GenericSaveAndContinueButton`, `GenericDeleteButton`) but forgot to
+  port the classes themselves. Added all 4 under `Block/Adminhtml/`
+  with namespace rewritten from `Panth\AdvancedSEO` to `Panth\PageBuilderAi`.
+
 ## [1.1.1]
 
 ### Fixed
