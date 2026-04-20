@@ -4,6 +4,45 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.6]
+
+### Added
+- **PageBuilder training prompt** — the `Generate/Index` admin controller now
+  prepends a hardened system prompt to every request before calling the LLM.
+  It teaches Claude / OpenAI to emit Magento PageBuilder-compliant markup
+  (`data-content-type="row|column-group|column|heading|text|buttons|divider|image|html"`)
+  so the generated content is a first-class editable PageBuilder block
+  instead of a raw HTML blob that PageBuilder ignores. The system prompt
+  is static / server-controlled and is **appended before** the user prompt
+  — admins cannot override the output contract via prompt injection.
+- **PageBuilder HTML content-type wrapping** on the JS side: if the LLM
+  returns content that isn't already wrapped in a
+  `<div data-content-type="row">`, the toolbar wraps it in a
+  row → column-group → column → html block so PageBuilder renders it.
+
+### Security
+- **Prompt size cap** — admin-supplied `custom_prompt` is rejected if
+  longer than 10 KB.
+- **Image payload cap** — each image rejected if over ~3 MB decoded
+  (4 MB base64). Max 5 per request.
+- **Image URL allowlist** — images must be either `data:image/…;base64,…`
+  or `https?://…`. Any other scheme / shape is rejected before the
+  request reaches the LLM.
+- **Null-byte + control-char filter** on the prompt string.
+- **Client-side sanitizer** in `pagebuilder-ai-toolbar.js` — strips
+  `<script>`, `<iframe>`, `<object>`, `<embed>`, `<form>`, `<meta>`,
+  `<link>`, all `on*="…"` inline event handlers, and any `javascript:`,
+  `vbscript:`, `file:`, or non-image `data:` URLs from LLM output BEFORE
+  it touches the DOM or the stage textarea. `.value` assignment (not
+  `innerHTML`) is used for the textarea path so no HTML parsing runs at
+  injection time.
+
+### Changed
+- Toolbar JS now dispatches `input`, `change`, and a new custom
+  `panth:pagebuilder-ai:content-injected` event on the stage textarea
+  so Knockout / Magento's stage picks up the change. Selectors extended
+  to cover CMS Block content (`textarea[name="block[content]"]`) too.
+
 ## [1.1.5]
 
 ### Added

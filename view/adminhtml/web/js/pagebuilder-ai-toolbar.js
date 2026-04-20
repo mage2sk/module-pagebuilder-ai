@@ -515,29 +515,76 @@
             .catch(function(e) { callback({ success: false, message: e.message }); });
     }
 
+    /**
+     * Strip <script>, inline event handlers, <iframe>/<object>/<embed>/<form>/<meta>/<link>
+     * and dangerous URL schemes from LLM output before it touches the DOM or the stage
+     * textarea. The server-side controller also has an allowlisted system prompt; this
+     * is defence in depth.
+     */
+    function sanitizeLlmHtml(raw) {
+        if (typeof raw !== 'string' || raw === '') return '';
+        var out = raw.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        out = out.replace(/<(iframe|object|embed|form|meta|link)\b[^>]*>(?:[\s\S]*?<\/\1>)?/gi, '');
+        out = out.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '');
+        out = out.replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '');
+        out = out.replace(/(href|src)\s*=\s*(["'])\s*(javascript|vbscript|file):[^"']*\2/gi, '$1=$2#$2');
+        out = out.replace(/(href|src)\s*=\s*(["'])\s*data:(?!image\/)[^"']*\2/gi, '$1=$2#$2');
+        return out;
+    }
+
+    /**
+     * Wrap arbitrary HTML in Magento PageBuilder's row/column-group/column/html structure
+     * so the output becomes a first-class editable PageBuilder block. Only called when
+     * the LLM didn't already emit a data-content-type="row" wrapper.
+     */
+    function wrapInPageBuilderBlock(innerHtml) {
+        return '<div data-content-type="row" data-appearance="contained" data-element="main">' +
+                 '<div data-content-type="column-group" data-grid-size="12" data-element="main">' +
+                   '<div data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" style="justify-content: flex-start; display: flex; flex-direction: column;">' +
+                     '<div data-content-type="html" data-appearance="default" data-element="main">' +
+                       innerHtml +
+                     '</div>' +
+                   '</div>' +
+                 '</div>' +
+               '</div>';
+    }
+
     function insertIntoPageBuilder(htmlContent) {
-        // Method 1: Try to find the wysiwyg/textarea behind PageBuilder
+        var clean = sanitizeLlmHtml(htmlContent);
+        if (!/^\s*<div[^>]*data-content-type=["']row["']/i.test(clean)) {
+            clean = wrapInPageBuilderBlock(clean);
+        }
+
         var textarea = document.querySelector('textarea[data-role="stage"]')
             || document.querySelector('#cms_page_form_content textarea')
             || document.querySelector('textarea[name="content"]')
-            || document.querySelector('textarea[name="product[description]"]');
+            || document.querySelector('textarea[name="product[description]"]')
+            || document.querySelector('textarea[name="block[content]"]');
 
         if (textarea) {
-            textarea.value = htmlContent;
-            textarea.dispatchEvent(new Event('change', {bubbles: true}));
+            // Setting .value is safe — it's a string assignment, no HTML parsing / script exec.
+            textarea.value = clean;
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            textarea.dispatchEvent(new Event('change', { bubbles: true }));
 
-            // Try TinyMCE
+            // TinyMCE fallback for older admin forms.
             if (textarea.id && typeof tinyMCE !== 'undefined') {
                 var editor = tinyMCE.get(textarea.id);
-                if (editor) editor.setContent(htmlContent);
+                if (editor) editor.setContent(clean);
             }
-        }
 
-        // Method 2: Try to update the PageBuilder stage preview
-        var stageContent = document.querySelector('[data-role="stage"] [data-content-type="text"]')
-            || document.querySelector('[data-role="stage"] [data-element="main"]');
-        if (stageContent) {
-            stageContent.innerHTML = htmlContent;
+            // Custom event for any listeners that want to refresh the stage.
+            document.dispatchEvent(new CustomEvent('panth:pagebuilder-ai:content-injected', {
+                detail: { textareaId: textarea.id || null }
+            }));
+
+            if (window.console && typeof console.info === 'function') {
+                console.info('[Panth PageBuilder AI] Content injected into stage textarea. ' +
+                             'If the stage does not refresh automatically, click Save or close ' +
+                             'and reopen the PageBuilder editor — the new content is persisted.');
+            }
+        } else if (window.console && console.warn) {
+            console.warn('[Panth PageBuilder AI] No stage textarea found — content not injected.');
         }
     }
 })();
