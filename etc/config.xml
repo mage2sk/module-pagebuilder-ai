@@ -8,7 +8,7 @@
             <ai>
                 <provider>openai</provider>
                 <openai_model>gpt-4o</openai_model>
-                <claude_model>claude-sonnet-4-5-20241022</claude_model>
+                <claude_model>claude-sonnet-4-6</claude_model>
                 <max_tokens>2048</max_tokens>
                 <temperature>0.7</temperature>
                 <monthly_budget>1000000</monthly_budget>

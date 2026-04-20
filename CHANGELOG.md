@@ -4,6 +4,20 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.3]
+
+### Fixed
+- **Default `claude_model` was `claude-sonnet-4-5-20241022`, which is not
+  a real Anthropic model ID** (mixes Claude 4.5 naming with an October
+  2024 date that pre-dates Claude 4). Result: the toolbar AI call failed
+  with `{"success":false,"message":"model: claude-sonnet-4-5-20241022"}`
+  straight from the Anthropic error response. Changed the default in
+  `etc/config.xml` to `claude-sonnet-4-6` — the current-generation
+  Sonnet model as of this release. Admins can override in *Stores →
+  Configuration → Panth Extensions → PageBuilder AI → AI → Claude Model*
+  if they need the Opus 4.7 flagship, Haiku 4.5 economy, or a specific
+  dated snapshot.
+
 ## [1.1.2]
 
 ### Fixed
