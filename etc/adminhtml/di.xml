@@ -36,4 +36,26 @@
                 type="Panth\PageBuilderAi\Plugin\ThirdParty\DynamicFormAiPlugin"
                 sortOrder="100"/>
     </type>
+
+    <!-- Native Magento Product / Category / CMS page meta-field AI buttons -->
+    <type name="Magento\Catalog\Ui\DataProvider\Product\Form\ProductDataProvider">
+        <plugin name="panth_pagebuilderai_product_seo_fields"
+                type="Panth\PageBuilderAi\Plugin\Admin\ProductSeoFieldsPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Catalog\Model\Category\DataProvider">
+        <plugin name="panth_pagebuilderai_category_seo_fields"
+                type="Panth\PageBuilderAi\Plugin\Admin\CategorySeoFieldsPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Cms\Model\Page\DataProvider">
+        <plugin name="panth_pagebuilderai_cms_page_seo_fields"
+                type="Panth\PageBuilderAi\Plugin\Admin\CmsPageSeoFieldsPlugin"
+                sortOrder="100"/>
+    </type>
+    <type name="Magento\Cms\Controller\Adminhtml\Page\Save">
+        <plugin name="panth_pagebuilderai_cms_page_seo_save"
+                type="Panth\PageBuilderAi\Plugin\Admin\CmsPageSeoFieldsSavePlugin"
+                sortOrder="100"/>
+    </type>
 </config>

@@ -4,6 +4,35 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.5]
+
+### Added
+- **AI Dashboard menu link** — *Panth Infotech → AI Dashboard* pointing
+  to `/panth_pagebuilderai/aisettings/index`. Matching ACL resource
+  `Panth_PageBuilderAi::ai_settings` added.
+- **AI button injection on native Magento product / category / CMS-page
+  forms** — ported 4 admin plugins from AdvancedSEO:
+  `Plugin/Admin/{ProductSeoFields, CategorySeoFields, CmsPageSeoFields,
+  CmsPageSeoFieldsSave}Plugin.php`. Registered in
+  `etc/adminhtml/di.xml` on `Magento\Catalog\Ui\DataProvider\Product\Form\ProductDataProvider`,
+  `Magento\Catalog\Model\Category\DataProvider`,
+  `Magento\Cms\Model\Page\DataProvider`, and
+  `Magento\Cms\Controller\Adminhtml\Page\Save`. AI buttons now appear
+  next to *Meta Title / Meta Description / Meta Keywords* fields on:
+  - Catalog → Products → {edit product} → Search Engine Optimization
+  - Catalog → Categories → {edit category} → Search Engine Optimization
+  - Content → Pages → {edit CMS page} → Search Engine Optimization
+- **`Model/Config/Source/MetaRobots.php`** ported — required by the
+  SEO-fields plugins.
+
+### Fixed
+- Default AI prompts (11) and AI knowledge base entries (506) weren't
+  seeded on initial 1.1.0 install because the data patches ran BEFORE
+  the AI tables existed (patch-dependency ordering). Re-running
+  `setup:upgrade` with patch_list entries cleared now seeds correctly.
+  Documentation note: if a store upgrading from 1.1.x sees 0 prompts,
+  run `DELETE FROM patch_list WHERE patch_name LIKE 'Panth\\PageBuilderAi\\Setup\\Patch\\Data\\Install%'; bin/magento setup:upgrade`.
+
 ## [1.1.4]
 
 ### Fixed

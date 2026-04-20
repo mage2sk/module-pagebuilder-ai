@@ -9,6 +9,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
+        <add id="Panth_PageBuilderAi::ai_dashboard"
+             title="AI Dashboard"
+             module="Panth_PageBuilderAi"
+             sortOrder="78"
+             parent="Panth_Core::panth_extensions"
+             action="panth_pagebuilderai/aisettings/index"
+             resource="Panth_PageBuilderAi::ai_settings"/>
+
         <add id="Panth_PageBuilderAi::ai_jobs"
              title="AI Generation Jobs"
              module="Panth_PageBuilderAi"
