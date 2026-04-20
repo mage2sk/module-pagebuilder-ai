@@ -4,6 +4,23 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.4]
+
+### Fixed
+- **`AiPrompt/Edit/*` and `AiKnowledge/Edit/*` button classes were never
+  ported in 1.1.0.** The UI-component XMLs referenced
+  `Panth\PageBuilderAi\Block\Adminhtml\{AiPrompt,AiKnowledge}\Edit\{BackButton,SaveButton,SaveAndContinueButton}`,
+  but the actual PHP classes stayed in AdvancedSEO. Every attempt to
+  open the edit form 500'd with `ReflectionException: Class ... does
+  not exist`. Copied all 6 classes from
+  `vendor/mage2kishan/module-advanced-seo/Block/Adminhtml/` with the
+  namespace rewritten from `Panth\AdvancedSEO` to `Panth\PageBuilderAi`.
+
+### Verified
+- `/panth_pagebuilderai/aiprompt/{new,edit}` → 200
+- `/panth_pagebuilderai/aiknowledge/{new,edit}` → 200
+- `/panth_pagebuilderai/aisettings/{index,jobs}` → 200
+
 ## [1.1.3]
 
 ### Fixed
