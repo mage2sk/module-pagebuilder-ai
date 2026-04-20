@@ -140,4 +140,49 @@
             <column name="status"/>
         </index>
     </table>
+
+    <!-- ============================================================ -->
+    <!-- panth_pagebuilderai_request_log                                -->
+    <!-- Append-only audit log of every prompt sent to / response       -->
+    <!-- received from the AI provider. Large fields (full prompt,      -->
+    <!-- response) are stored in mediumtext; the admin grid shows       -->
+    <!-- truncated previews and the full payload is available on the    -->
+    <!-- detail page.                                                   -->
+    <!-- ============================================================ -->
+    <table name="panth_pagebuilderai_request_log" resource="default" engine="innodb" comment="Audit log for AI generation requests/responses">
+        <column xsi:type="int" name="log_id" unsigned="true" nullable="false" identity="true" comment="Log ID"/>
+        <column xsi:type="varchar" name="admin_user" length="128" nullable="true" comment="Admin username"/>
+        <column xsi:type="varchar" name="entity_type" length="32" nullable="true" comment="product|category|cms_page|cms_block"/>
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="true" comment="Entity ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="true" comment="Store ID"/>
+        <column xsi:type="varchar" name="target_field" length="64" nullable="true" comment="Target form field"/>
+        <column xsi:type="varchar" name="output_format" length="32" nullable="true" comment="pagebuilder_html|plain|json"/>
+        <column xsi:type="varchar" name="provider" length="32" nullable="true" comment="openai|claude"/>
+        <column xsi:type="varchar" name="model" length="64" nullable="true" comment="Model id"/>
+        <column xsi:type="int" name="prompt_length" unsigned="true" nullable="false" default="0" comment="Prompt length (chars)"/>
+        <column xsi:type="int" name="response_length" unsigned="true" nullable="false" default="0" comment="Response length (chars)"/>
+        <column xsi:type="int" name="image_count" unsigned="true" nullable="false" default="0" comment="Number of images attached"/>
+        <column xsi:type="int" name="tokens_used" unsigned="true" nullable="true" comment="Total tokens (if provider reports)"/>
+        <column xsi:type="int" name="latency_ms" unsigned="true" nullable="true" comment="End-to-end latency (ms)"/>
+        <column xsi:type="boolean" name="success" nullable="false" default="false" comment="Whether the call succeeded"/>
+        <column xsi:type="varchar" name="http_status" length="8" nullable="true" comment="HTTP status code"/>
+        <column xsi:type="text" name="error_message" nullable="true" comment="Error message (on failure)"/>
+        <column xsi:type="mediumtext" name="prompt" nullable="true" comment="Full prompt sent to AI"/>
+        <column xsi:type="mediumtext" name="response" nullable="true" comment="Full raw response from AI"/>
+        <column xsi:type="mediumtext" name="images_json" nullable="true" comment="JSON array of uploaded image data URIs / URLs (capped)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="log_id"/>
+        </constraint>
+        <index referenceId="PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_CREATED" indexType="btree">
+            <column name="created_at"/>
+        </index>
+        <index referenceId="PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_ENTITY" indexType="btree">
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+        </index>
+        <index referenceId="PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_SUCCESS" indexType="btree">
+            <column name="success"/>
+        </index>
+    </table>
 </schema>

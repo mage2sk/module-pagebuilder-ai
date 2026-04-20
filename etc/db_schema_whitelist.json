@@ -80,6 +80,39 @@
             "PANTH_SEO_AI_CACHE_UNQ_KEY": true
         }
     },
+    "panth_pagebuilderai_request_log": {
+        "column": {
+            "log_id": true,
+            "admin_user": true,
+            "entity_type": true,
+            "entity_id": true,
+            "store_id": true,
+            "target_field": true,
+            "output_format": true,
+            "provider": true,
+            "model": true,
+            "prompt_length": true,
+            "response_length": true,
+            "image_count": true,
+            "tokens_used": true,
+            "latency_ms": true,
+            "success": true,
+            "http_status": true,
+            "error_message": true,
+            "prompt": true,
+            "response": true,
+            "images_json": true,
+            "created_at": true
+        },
+        "index": {
+            "PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_CREATED": true,
+            "PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_ENTITY": true,
+            "PANTH_PAGEBUILDERAI_REQUEST_LOG_IDX_SUCCESS": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
     "panth_seo_generation_job": {
         "column": {
             "job_id": true,

@@ -10,7 +10,8 @@ class AiService
 {
     public function __construct(
         private readonly Config $config,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly RequestLogger $requestLogger
     ) {
     }
 
@@ -19,26 +20,48 @@ class AiService
      *
      * @param string $prompt
      * @param array $images Base64-encoded images (optional)
+     * @param array<string, mixed> $logContext Optional caller metadata forwarded
+     *        verbatim into the audit log row (entity_type, entity_id, store_id,
+     *        target_field, output_format). Used by Controller/Adminhtml/Generate
+     *        to annotate the log entry, but no caller is required to pass it —
+     *        the row is still written, just without entity context.
      * @return array{success: bool, content: string, message?: string}
      */
-    public function generate(string $prompt, array $images = []): array
+    public function generate(string $prompt, array $images = [], array $logContext = []): array
     {
         $provider = $this->config->getProvider();
+        $startedAt = microtime(true);
 
         try {
             if ($provider === 'openai') {
-                return $this->callOpenAi($prompt, $images);
+                $result = $this->callOpenAi($prompt, $images);
+            } elseif ($provider === 'claude') {
+                $result = $this->callClaude($prompt, $images);
+            } else {
+                $result = ['success' => false, 'content' => '', 'message' => 'No AI provider configured.'];
             }
-            if ($provider === 'claude') {
-                return $this->callClaude($prompt, $images);
-            }
-            return ['success' => false, 'content' => '', 'message' => 'No AI provider configured.'];
         } catch (\Throwable $e) {
             $this->logger->error('Panth PageBuilderAi: AI generation failed', [
                 'error' => $e->getMessage(),
             ]);
-            return ['success' => false, 'content' => '', 'message' => 'AI generation failed. Check system logs.'];
+            $result = ['success' => false, 'content' => '', 'message' => 'AI generation failed. Check system logs.'];
         }
+
+        // Always log — every single prompt/response pair is persisted, regardless
+        // of which caller invoked generate(). If the logger itself fails it
+        // swallows the exception so the AI response still reaches the user.
+        $this->requestLogger->record(($logContext ?? []) + [
+            'prompt'        => $prompt,
+            'images'        => $images,
+            'image_count'   => count($images),
+            'success'       => !empty($result['success']),
+            'response'      => (string) ($result['content'] ?? ''),
+            'error_message' => !empty($result['success']) ? null : ($result['message'] ?? null),
+            'tokens_used'   => $result['tokens_used'] ?? null,
+            'latency_ms'    => (int) round((microtime(true) - $startedAt) * 1000),
+        ]);
+
+        return $result;
     }
 
     private function callOpenAi(string $prompt, array $images): array
@@ -86,8 +109,9 @@ class AiService
 
         $decoded = json_decode($response['body'], true);
         $content = $decoded['choices'][0]['message']['content'] ?? '';
+        $tokens  = isset($decoded['usage']['total_tokens']) ? (int) $decoded['usage']['total_tokens'] : null;
 
-        return ['success' => true, 'content' => trim($content)];
+        return ['success' => true, 'content' => trim($content), 'tokens_used' => $tokens];
     }
 
     private function callClaude(string $prompt, array $images): array
@@ -153,8 +177,13 @@ class AiService
                 $text .= ($block['text'] ?? '');
             }
         }
+        $tokens = null;
+        if (isset($decoded['usage']['input_tokens']) || isset($decoded['usage']['output_tokens'])) {
+            $tokens = (int) ($decoded['usage']['input_tokens'] ?? 0)
+                    + (int) ($decoded['usage']['output_tokens'] ?? 0);
+        }
 
-        return ['success' => true, 'content' => trim($text)];
+        return ['success' => true, 'content' => trim($text), 'tokens_used' => $tokens];
     }
 
     /**

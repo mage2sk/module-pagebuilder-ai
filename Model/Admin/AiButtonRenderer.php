@@ -57,7 +57,7 @@ class AiButtonRenderer
         string $placeholderHelp = '',
         int $sortOrder = 5
     ): array {
-        $generateUrl = $this->backendUrl->getUrl('panth_pagebuilderai/aigenerate/generate');
+        $generateUrl = $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
 
         return [
             'arguments' => [

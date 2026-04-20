@@ -86,6 +86,13 @@ class CmsPageSeoFieldsSavePlugin
     ): void {
         $connection = $this->resource->getConnection();
         $table      = $this->resource->getTableName(self::TABLE);
+
+        // Table is provided by Panth_AdvancedSEO; when that module isn't installed the
+        // admin form still renders but save becomes a no-op for the SEO override fields.
+        if (!$connection->isTableExists($table)) {
+            return;
+        }
+
         $existingId = $this->findExistingId($pageId, $storeId);
 
         // If both fields are empty, remove the override row entirely.
@@ -130,14 +137,22 @@ class CmsPageSeoFieldsSavePlugin
         $connection = $this->resource->getConnection();
         $table      = $this->resource->getTableName(self::TABLE);
 
-        $select = $connection->select()
-            ->from($table, ['override_id'])
-            ->where('entity_type = ?', self::ENTITY_TYPE)
-            ->where('entity_id = ?', $entityId)
-            ->where('store_id = ?', $storeId)
-            ->limit(1);
+        if (!$connection->isTableExists($table)) {
+            return null;
+        }
 
-        $id = $connection->fetchOne($select);
+        try {
+            $select = $connection->select()
+                ->from($table, ['override_id'])
+                ->where('entity_type = ?', self::ENTITY_TYPE)
+                ->where('entity_id = ?', $entityId)
+                ->where('store_id = ?', $storeId)
+                ->limit(1);
+
+            $id = $connection->fetchOne($select);
+        } catch (\Throwable) {
+            return null;
+        }
 
         return $id !== false ? (int) $id : null;
     }

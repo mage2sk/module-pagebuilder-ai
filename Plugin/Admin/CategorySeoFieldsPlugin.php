@@ -143,8 +143,8 @@ class CategorySeoFieldsPlugin
         ];
 
         // -- AI Generate Meta button --
-        if ($this->seoConfig->isAiEnabled()) {
-            $generateUrl = $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
+        if ($this->seoConfig->isEnabled() && $this->seoConfig->hasOwnApiKey()) {
+            $generateUrl = $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
             $result[$seoGroupKey]['children']['ai_generate_container'] = [
                 'arguments' => [
                     'data' => [
@@ -445,7 +445,8 @@ function panthSeoAiGenerateCategory(btn) {
         form_key: typeof FORM_KEY !== 'undefined' ? FORM_KEY : '',
         entity_type: panthAiEntityTypeCat,
         entity_id: entityId,
-        store_id: storeId
+        store_id: storeId,
+        output_format: 'json'
     };
     if (promptText && promptText.value.trim()) {
         payload.custom_prompt = promptText.value.trim();
@@ -531,7 +532,8 @@ function panthGenerateFieldCat() {
         entity_id: entityId,
         store_id: storeId,
         target_field: panthAiCurrentFieldKeyCat,
-        custom_prompt: promptText ? promptText.value.trim() : ''
+        custom_prompt: promptText ? promptText.value.trim() : '',
+        output_format: 'plain'
     };
 
     panthGetUploadedImagesCat('panth-ai-field-images-cat').then(function(images) {

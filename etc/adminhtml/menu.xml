@@ -40,5 +40,13 @@
              parent="Panth_Core::panth_extensions"
              action="panth_pagebuilderai/aiknowledge/index"
              resource="Panth_PageBuilderAi::ai_knowledge"/>
+
+        <add id="Panth_PageBuilderAi::ai_request_logs"
+             title="AI Request Logs"
+             module="Panth_PageBuilderAi"
+             sortOrder="86"
+             parent="Panth_Core::panth_extensions"
+             action="panth_pagebuilderai/requestLog/index"
+             resource="Panth_PageBuilderAi::ai_request_logs"/>
     </menu>
 </config>

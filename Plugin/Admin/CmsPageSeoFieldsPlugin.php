@@ -92,8 +92,8 @@ class CmsPageSeoFieldsPlugin
         ];
 
         // -- AI Generate Content button (in Content section) --
-        if ($this->seoConfig->isAiEnabled()) {
-            $generateUrl = $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
+        if ($this->seoConfig->isEnabled() && $this->seoConfig->hasOwnApiKey()) {
+            $generateUrl = $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
 
             // Add AI button to Content section for page content generation
             if (isset($result['content'])) {
@@ -410,7 +410,10 @@ function panthSeoAiGenerateCmsPage(btn) {
         form_key: typeof FORM_KEY !== 'undefined' ? FORM_KEY : '',
         entity_type: panthAiEntityTypeCms,
         entity_id: entityId,
-        store_id: storeId
+        store_id: storeId,
+        // "Generate All Fields" uses the default CMS meta prompt which asks for a
+        // {"meta_title":"…","meta_description":"…"} JSON pack.
+        output_format: 'json'
     };
     if (promptText && promptText.value.trim()) {
         payload.custom_prompt = promptText.value.trim();
@@ -496,7 +499,9 @@ function panthGenerateFieldCms() {
         entity_id: entityId,
         store_id: storeId,
         target_field: panthAiCurrentFieldKeyCms,
-        custom_prompt: promptText ? promptText.value.trim() : ''
+        custom_prompt: promptText ? promptText.value.trim() : '',
+        // Per-field generation wants a single bare string (meta_title text, etc.).
+        output_format: 'plain'
     };
 
     panthGetUploadedImagesCms('panth-ai-field-images-cms').then(function(images) {
@@ -622,15 +627,25 @@ HTML;
         $connection = $this->resource->getConnection();
         $table      = $this->resource->getTableName(self::OVERRIDE_TABLE);
 
-        $select = $connection->select()
-            ->from($table, ['robots', 'hreflang_identifier'])
-            ->where('entity_type = ?', self::ENTITY_TYPE)
-            ->where('entity_id = ?', $entityId)
-            ->where('store_id IN (?)', [0, $storeId])
-            ->order('store_id DESC')
-            ->limit(1);
+        // The overrides table is provided by Panth_AdvancedSEO. If that module isn't
+        // installed the table won't exist — silently skip rather than fatal.
+        if (!$connection->isTableExists($table)) {
+            return null;
+        }
 
-        $row = $connection->fetchRow($select);
+        try {
+            $select = $connection->select()
+                ->from($table, ['robots', 'hreflang_identifier'])
+                ->where('entity_type = ?', self::ENTITY_TYPE)
+                ->where('entity_id = ?', $entityId)
+                ->where('store_id IN (?)', [0, $storeId])
+                ->order('store_id DESC')
+                ->limit(1);
+
+            $row = $connection->fetchRow($select);
+        } catch (\Throwable) {
+            return null;
+        }
 
         return $row !== false ? $row : null;
     }

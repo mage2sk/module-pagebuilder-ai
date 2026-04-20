@@ -24,6 +24,12 @@
             <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob</argument>
         </arguments>
     </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\RequestLog\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_pagebuilderai_request_log</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\RequestLog</argument>
+        </arguments>
+    </type>
 
     <!-- UI grid data source registrations (must match the <dataSource name="..."> in the listing XMLs). -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
@@ -32,6 +38,7 @@
                 <item name="panth_pagebuilderai_ai_prompt_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\Grid\Collection</item>
                 <item name="panth_pagebuilderai_ai_knowledge_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge\Grid\Collection</item>
                 <item name="panth_pagebuilderai_generation_job_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\Collection</item>
+                <item name="panth_pagebuilderai_request_log_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\RequestLog\Grid\Collection</item>
             </argument>
         </arguments>
     </type>

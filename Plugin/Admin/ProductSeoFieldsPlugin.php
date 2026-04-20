@@ -160,8 +160,8 @@ class ProductSeoFieldsPlugin
         ];
 
         // -- AI Generate Meta button --
-        if ($this->seoConfig->isAiEnabled()) {
-            $generateUrl = $this->backendUrl->getUrl('panth_seo/aigenerate/generate');
+        if ($this->seoConfig->isEnabled() && $this->seoConfig->hasOwnApiKey()) {
+            $generateUrl = $this->backendUrl->getUrl('panth_pagebuilderai/generate/index');
             $result['search-engine-optimization']['children']['ai_generate_container'] = [
                 'arguments' => [
                     'data' => [
@@ -509,7 +509,8 @@ function panthSeoAiGenerate(btn) {
         form_key: typeof FORM_KEY !== 'undefined' ? FORM_KEY : '',
         entity_type: panthAiEntityType,
         entity_id: entityId,
-        store_id: storeId
+        store_id: storeId,
+        output_format: 'json'
     };
     if (promptText && promptText.value.trim()) {
         payload.custom_prompt = promptText.value.trim();
@@ -597,7 +598,8 @@ function panthGenerateField() {
         entity_id: entityId,
         store_id: storeId,
         target_field: panthAiCurrentFieldKey,
-        custom_prompt: promptText ? promptText.value.trim() : ''
+        custom_prompt: promptText ? promptText.value.trim() : '',
+        output_format: 'plain'
     };
 
     panthGetUploadedImages('panth-ai-field-images').then(function(images) {
@@ -670,21 +672,33 @@ HTML;
 
     /**
      * Load the custom canonical URL from panth_seo_custom_canonical.
+     *
+     * The table is owned by the optional Panth_AdvancedSEO module and may not
+     * be installed on every environment. Guard the lookup with isTableExists()
+     * and a catch-all so a missing table never crashes product edit.
      */
     private function loadCanonicalUrl(string $entityType, int $entityId, int $storeId): ?string
     {
-        $connection = $this->resource->getConnection();
-        $table      = $this->resource->getTableName(self::CANONICAL_TABLE);
+        try {
+            $connection = $this->resource->getConnection();
+            $table      = $this->resource->getTableName(self::CANONICAL_TABLE);
 
-        $select = $connection->select()
-            ->from($table, ['target_url'])
-            ->where('source_entity_type = ?', $entityType)
-            ->where('source_entity_id = ?', $entityId)
-            ->where('store_id IN (?)', [0, $storeId])
-            ->order('store_id DESC')
-            ->limit(1);
+            if (!$connection->isTableExists($table)) {
+                return null;
+            }
 
-        $value = $connection->fetchOne($select);
+            $select = $connection->select()
+                ->from($table, ['target_url'])
+                ->where('source_entity_type = ?', $entityType)
+                ->where('source_entity_id = ?', $entityId)
+                ->where('store_id IN (?)', [0, $storeId])
+                ->order('store_id DESC')
+                ->limit(1);
+
+            $value = $connection->fetchOne($select);
+        } catch (\Throwable) {
+            return null;
+        }
 
         return $value !== false && $value !== '' ? (string) $value : null;
     }

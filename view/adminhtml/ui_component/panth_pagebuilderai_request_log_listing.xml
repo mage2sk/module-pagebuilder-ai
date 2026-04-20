@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">panth_pagebuilderai_request_log_listing.panth_pagebuilderai_request_log_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>panth_pagebuilderai_request_log_listing_columns</spinner>
+        <deps>
+            <dep>panth_pagebuilderai_request_log_listing.panth_pagebuilderai_request_log_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="panth_pagebuilderai_request_log_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">log_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="panth_pagebuilderai_request_log_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>log_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <message translate="true">Are you sure you want to delete selected logs?</message>
+                        <title translate="true">Delete Logs</title>
+                    </confirm>
+                    <url path="panth_pagebuilderai/requestLog/massDelete"/>
+                    <type>delete</type>
+                    <label translate="true">Delete Selected</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="panth_pagebuilderai_request_log_listing_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>log_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="log_id" sortOrder="10">
+            <settings>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date" sortOrder="20">
+            <settings>
+                <label translate="true">When</label>
+                <dateFormat>MMM d, y h:mm:ss a</dateFormat>
+            </settings>
+        </column>
+        <column name="admin_user" sortOrder="30">
+            <settings>
+                <label translate="true">Admin</label>
+            </settings>
+        </column>
+        <column name="success" component="Magento_Ui/js/grid/columns/select" sortOrder="40">
+            <settings>
+                <label translate="true">OK</label>
+                <dataType>select</dataType>
+                <options>
+                    <option name="ok" xsi:type="array">
+                        <item name="value" xsi:type="string">1</item>
+                        <item name="label" xsi:type="string">Success</item>
+                    </option>
+                    <option name="fail" xsi:type="array">
+                        <item name="value" xsi:type="string">0</item>
+                        <item name="label" xsi:type="string">Failed</item>
+                    </option>
+                </options>
+            </settings>
+        </column>
+        <column name="entity_type" sortOrder="50">
+            <settings>
+                <label translate="true">Entity</label>
+            </settings>
+        </column>
+        <column name="entity_id" sortOrder="60">
+            <settings>
+                <label translate="true">Entity ID</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="target_field" sortOrder="70">
+            <settings>
+                <label translate="true">Target Field</label>
+            </settings>
+        </column>
+        <column name="output_format" sortOrder="80" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <label translate="true">Format</label>
+                <dataType>select</dataType>
+                <options>
+                    <option name="pb" xsi:type="array">
+                        <item name="value" xsi:type="string">pagebuilder_html</item>
+                        <item name="label" xsi:type="string">PageBuilder HTML</item>
+                    </option>
+                    <option name="plain" xsi:type="array">
+                        <item name="value" xsi:type="string">plain</item>
+                        <item name="label" xsi:type="string">Plain Text</item>
+                    </option>
+                    <option name="json" xsi:type="array">
+                        <item name="value" xsi:type="string">json</item>
+                        <item name="label" xsi:type="string">JSON</item>
+                    </option>
+                </options>
+            </settings>
+        </column>
+        <column name="provider" sortOrder="90">
+            <settings>
+                <label translate="true">Provider</label>
+            </settings>
+        </column>
+        <column name="model" sortOrder="95">
+            <settings>
+                <label translate="true">Model</label>
+            </settings>
+        </column>
+        <column name="prompt_length" sortOrder="100">
+            <settings>
+                <label translate="true">Prompt (chars)</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="response_length" sortOrder="110">
+            <settings>
+                <label translate="true">Response (chars)</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="tokens_used" sortOrder="120">
+            <settings>
+                <label translate="true">Tokens</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="latency_ms" sortOrder="125">
+            <settings>
+                <label translate="true">Latency (ms)</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="image_count" sortOrder="130">
+            <settings>
+                <label translate="true">Image count</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Panth\PageBuilderAi\Ui\Component\Listing\RequestLogActions" sortOrder="200">
+            <settings>
+                <indexField>log_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>110</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

@@ -3,20 +3,28 @@ declare(strict_types=1);
 
 namespace Panth\PageBuilderAi\Controller\Adminhtml\AiSettings;
 
-use Panth\PageBuilderAi\Controller\Adminhtml\AbstractAction;
-use Magento\Framework\App\Action\HttpPostActionInterface;
-use Panth\PageBuilderAi\Model\GenerationJob;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Api\CategoryRepositoryInterface;
-use Magento\Cms\Api\PageRepositoryInterface;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Backend\App\Action\Context;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Cms\Api\PageRepositoryInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Data\Form\FormKey\Validator as FormKeyValidator;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Ui\Component\MassAction\Filter;
+use Panth\PageBuilderAi\Controller\Adminhtml\AbstractAction;
+use Panth\PageBuilderAi\Model\GenerationJob;
+use Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\CollectionFactory as JobCollectionFactory;
+use Psr\Log\LoggerInterface;
 
 /**
  * Approves a batch of draft generation jobs, copying draft_title/description
  * onto the underlying entity's meta fields.
+ *
+ * Accepts ids from three places, in priority order:
+ *   1. Magento UI mass-action via `Filter::getCollection()` (selected, excluded, filters, namespace).
+ *   2. Flat `selected[]` POST — legacy / non-UI grid callers.
+ *   3. Flat `job_ids[]` POST — direct API / CLI callers.
  */
 class ApproveBatch extends AbstractAction implements HttpPostActionInterface
 {
@@ -29,7 +37,10 @@ class ApproveBatch extends AbstractAction implements HttpPostActionInterface
         private readonly ProductRepositoryInterface $productRepository,
         private readonly CategoryRepositoryInterface $categoryRepository,
         private readonly PageRepositoryInterface $pageRepository,
-        private readonly FormKeyValidator $formKeyValidator
+        private readonly FormKeyValidator $formKeyValidator,
+        private readonly Filter $filter,
+        private readonly JobCollectionFactory $jobCollectionFactory,
+        private readonly LoggerInterface $logger
     ) {
         parent::__construct($context);
     }
@@ -40,35 +51,67 @@ class ApproveBatch extends AbstractAction implements HttpPostActionInterface
 
         if (!$this->getRequest()->isPost() || !$this->formKeyValidator->validate($this->getRequest())) {
             $this->messageManager->addErrorMessage(__('Invalid form key. Please refresh the page.'));
-            return $resultRedirect->setPath('*/*/');
+            return $resultRedirect->setPath('panth_pagebuilderai/aiSettings/jobs');
         }
 
-        $jobIds = (array)$this->getRequest()->getParam('job_ids', []);
-        $jobIds = array_filter(array_map('intval', $jobIds));
+        $jobIds = $this->resolveJobIds();
+
         if (!$jobIds) {
             $this->messageManager->addErrorMessage(__('No jobs selected.'));
-            return $resultRedirect->setPath('*/*/');
+            return $resultRedirect->setPath('panth_pagebuilderai/aiSettings/jobs');
         }
 
         $connection = $this->resource->getConnection();
         $table = $this->resource->getTableName('panth_seo_generation_job');
         $approved = 0;
+        $skippedNotDraft = 0;
+
         foreach ($jobIds as $jobId) {
             $row = $connection->fetchRow(
                 $connection->select()->from($table)->where('job_id = ?', $jobId)->limit(1)
             );
-            if (!$row || ($row['status'] ?? '') !== GenerationJob::STATUS_DRAFT) {
+            if (!$row) {
+                continue;
+            }
+            if (($row['status'] ?? '') !== GenerationJob::STATUS_DRAFT) {
+                $skippedNotDraft++;
                 continue;
             }
             try {
                 $options = json_decode((string)($row['options'] ?? '{}'), true) ?: [];
-                $this->applyToEntity(
-                    (string)$row['entity_type'],
-                    (int)($options['entity_id'] ?? 0),
-                    (int)$row['store_id'],
-                    (string)($options['draft_title'] ?? ''),
-                    (string)($options['draft_description'] ?? '')
-                );
+                $results = (array) ($options['results'] ?? []);
+                $storeId = (int) $row['store_id'];
+                $type    = (string) $row['entity_type'];
+                $applied = 0;
+
+                foreach ($results as $entityId => $draft) {
+                    if (!is_array($draft)) {
+                        continue;
+                    }
+                    $title = (string) ($draft['draft_title'] ?? '');
+                    $desc  = (string) ($draft['draft_description'] ?? '');
+                    if ($title === '' && $desc === '') {
+                        continue;
+                    }
+                    $this->applyToEntity($type, (int) $entityId, $storeId, $title, $desc);
+                    $applied++;
+                }
+
+                if ($applied === 0 && !empty($options['entity_id'])) {
+                    $this->applyToEntity(
+                        $type,
+                        (int) $options['entity_id'],
+                        $storeId,
+                        (string) ($options['draft_title'] ?? ''),
+                        (string) ($options['draft_description'] ?? '')
+                    );
+                    $applied++;
+                }
+
+                if ($applied === 0) {
+                    throw new \RuntimeException('No draft results to apply.');
+                }
+
                 $connection->update(
                     $table,
                     ['status' => GenerationJob::STATUS_APPROVED, 'updated_at' => $this->dateTime->gmtDate()],
@@ -76,6 +119,7 @@ class ApproveBatch extends AbstractAction implements HttpPostActionInterface
                 );
                 $approved++;
             } catch (\Throwable $e) {
+                $this->logger->warning('[Panth PageBuilderAi] approve failed for job ' . $jobId . ': ' . $e->getMessage());
                 $connection->update(
                     $table,
                     ['error_message' => $e->getMessage(), 'updated_at' => $this->dateTime->gmtDate()],
@@ -84,8 +128,48 @@ class ApproveBatch extends AbstractAction implements HttpPostActionInterface
             }
         }
 
-        $this->messageManager->addSuccessMessage(__('%1 job(s) approved.', $approved));
-        return $resultRedirect->setPath('*/*/');
+        if ($approved > 0) {
+            $this->messageManager->addSuccessMessage(__('%1 job(s) approved.', $approved));
+        }
+        if ($skippedNotDraft > 0) {
+            $this->messageManager->addNoticeMessage(
+                __('%1 job(s) were skipped because they are not in "draft" status yet — only jobs whose results are ready for review can be approved.', $skippedNotDraft)
+            );
+        }
+        if ($approved === 0 && $skippedNotDraft === 0) {
+            $this->messageManager->addErrorMessage(__('No matching jobs found for approval.'));
+        }
+        return $resultRedirect->setPath('panth_pagebuilderai/aiSettings/jobs');
+    }
+
+    /**
+     * @return int[]
+     */
+    private function resolveJobIds(): array
+    {
+        // 1) Magento UI mass-action — uses Filter to merge selected/excluded/filters into a collection.
+        try {
+            $collection = $this->filter->getCollection($this->jobCollectionFactory->create());
+            $ids = array_map('intval', (array) $collection->getAllIds());
+            $ids = array_filter($ids);
+            if ($ids) {
+                return array_values($ids);
+            }
+        } catch (\Throwable) {
+            // Filter throws if the request doesn't carry UI mass-action params — fall through.
+        }
+
+        // 2) Flat `selected[]` fallback.
+        $selected = (array) $this->getRequest()->getParam('selected', []);
+        $ids = array_filter(array_map('intval', $selected));
+        if ($ids) {
+            return array_values($ids);
+        }
+
+        // 3) Flat `job_ids[]` fallback (direct API callers, CLI).
+        $jobIds = (array) $this->getRequest()->getParam('job_ids', []);
+        $ids = array_filter(array_map('intval', $jobIds));
+        return array_values($ids);
     }
 
     private function applyToEntity(string $type, int $id, int $storeId, string $title, string $description): void

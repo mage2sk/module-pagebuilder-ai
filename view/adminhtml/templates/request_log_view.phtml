@@ -1,0 +1,105 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$row = (array) $block->getData('log_row');
+if (!$row) {
+    return;
+}
+
+$kv = [
+    ['label' => __('When'),            'value' => $row['created_at'] ?? ''],
+    ['label' => __('Admin user'),      'value' => $row['admin_user'] ?? ''],
+    ['label' => __('Outcome'),         'value' => !empty($row['success']) ? __('Success') : __('Failed')],
+    ['label' => __('HTTP status'),     'value' => $row['http_status'] ?? ''],
+    ['label' => __('Entity'),          'value' => trim(((string)($row['entity_type'] ?? '')) . ' #' . ((string)($row['entity_id'] ?? '')))],
+    ['label' => __('Store ID'),        'value' => $row['store_id'] ?? ''],
+    ['label' => __('Target field'),    'value' => $row['target_field'] ?? ''],
+    ['label' => __('Output format'),   'value' => $row['output_format'] ?? ''],
+    ['label' => __('Provider'),        'value' => $row['provider'] ?? ''],
+    ['label' => __('Model'),           'value' => $row['model'] ?? ''],
+    ['label' => __('Prompt length'),   'value' => (int)($row['prompt_length'] ?? 0)],
+    ['label' => __('Response length'), 'value' => (int)($row['response_length'] ?? 0)],
+    ['label' => __('Image count'),     'value' => (int)($row['image_count'] ?? 0)],
+    ['label' => __('Tokens used'),     'value' => $row['tokens_used'] ?? ''],
+    ['label' => __('Latency (ms)'),    'value' => $row['latency_ms'] ?? ''],
+];
+?>
+<style>
+    .panth-log-view { padding: 20px; }
+    .panth-log-view .panth-log-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 20px; margin-bottom: 18px; background:#fafafa; border:1px solid #e3e3e3; border-radius:4px; padding:14px 18px;}
+    .panth-log-view .panth-log-meta div { font-size:13px; }
+    .panth-log-view .panth-log-meta strong { color:#303030; min-width: 120px; display:inline-block; }
+    .panth-log-view h3 { font-size:15px; margin: 18px 0 8px; }
+    .panth-log-view pre { background:#272822; color:#f8f8f2; padding:14px; border-radius:4px; max-height:480px; overflow:auto; font-size:12px; white-space:pre-wrap; word-break:break-word; }
+    .panth-log-view .panth-log-error { background:#fdecea; color:#842029; padding:10px 14px; border-left:4px solid #c00; border-radius:2px; margin-bottom:14px; }
+    .panth-log-view .panth-log-back { margin-bottom: 12px; }
+</style>
+
+<div class="panth-log-view">
+    <p class="panth-log-back">
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getUrl('panth_pagebuilderai/requestLog/index')) ?>">
+            &larr; <?= $escaper->escapeHtml(__('Back to AI Request Logs')) ?>
+        </a>
+    </p>
+
+    <div class="panth-log-meta">
+        <?php foreach ($kv as $cell): ?>
+            <div><strong><?= $escaper->escapeHtml((string) $cell['label']) ?></strong> <?= $escaper->escapeHtml((string) $cell['value']) ?></div>
+        <?php endforeach; ?>
+    </div>
+
+    <?php if (!empty($row['error_message'])): ?>
+        <div class="panth-log-error">
+            <strong><?= $escaper->escapeHtml(__('Error:')) ?></strong>
+            <?= $escaper->escapeHtml((string) $row['error_message']) ?>
+        </div>
+    <?php endif; ?>
+
+    <h3><?= $escaper->escapeHtml(__('Prompt')) ?></h3>
+    <pre><?= $escaper->escapeHtml((string) ($row['prompt'] ?? '')) ?></pre>
+
+    <?php
+    // Decode stored images defensively: null, empty string, non-JSON, or a
+    // non-array decode all silently skip the section. Only render when we
+    // actually have a list of image references.
+    $imagesJson = $row['images_json'] ?? null;
+    $images = [];
+    if (is_string($imagesJson) && $imagesJson !== '') {
+        $decoded = json_decode($imagesJson, true);
+        if (is_array($decoded)) {
+            $images = $decoded;
+        }
+    }
+    ?>
+    <?php if (!empty($images)): ?>
+        <?php $mediaBaseUrl = rtrim((string) $block->getData('media_base_url'), '/') . '/'; ?>
+        <h3><?= $escaper->escapeHtml(__('Uploaded images')) ?></h3>
+        <div class="panth-log-images">
+            <?php foreach ($images as $i => $img): ?>
+                <?php
+                if (!is_string($img) || $img === '') {
+                    continue;
+                }
+                // Pass through absolute URLs; prefix stored relative media
+                // paths with the current store's media base URL.
+                if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://') || str_starts_with($img, '//')) {
+                    $src = $img;
+                } else {
+                    $src = $mediaBaseUrl . ltrim($img, '/');
+                }
+                ?>
+                <a href="<?= $escaper->escapeUrl($src) ?>" target="_blank" rel="noopener">
+                    <img
+                        src="<?= $escaper->escapeUrl($src) ?>"
+                        alt="<?= $escaper->escapeHtmlAttr(__('Attachment #%1', $i + 1)) ?>"
+                        style="max-width:240px; max-height:240px; border:1px solid #e3e3e3; border-radius:4px; margin:6px;"
+                    />
+                </a>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <h3><?= $escaper->escapeHtml(__('Response')) ?></h3>
+    <pre><?= $escaper->escapeHtml((string) ($row['response'] ?? '')) ?></pre>
+</div>

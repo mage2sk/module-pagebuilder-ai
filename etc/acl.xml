@@ -28,6 +28,7 @@
                     <resource id="Panth_PageBuilderAi::ai_jobs" title="AI Generation Jobs" sortOrder="20"/>
                     <resource id="Panth_PageBuilderAi::ai_prompts" title="AI Prompts" sortOrder="30"/>
                     <resource id="Panth_PageBuilderAi::ai_knowledge" title="AI Knowledge Base" sortOrder="40"/>
+                    <resource id="Panth_PageBuilderAi::ai_request_logs" title="AI Request Logs" sortOrder="50"/>
                 </resource>
 
                 <!-- Legacy standalone resource — still used by Controller\Adminhtml\Generate\Index. -->

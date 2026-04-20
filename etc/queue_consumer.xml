@@ -5,6 +5,5 @@
               queue="panth_pagebuilderai.generate_meta.q"
               connection="db"
               maxMessages="500"
-              consumerInstance="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer"
               handler="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer::process"/>
 </config>

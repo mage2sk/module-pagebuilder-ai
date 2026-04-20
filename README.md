@@ -22,6 +22,10 @@
 
 Write a CMS page or product description in seconds — pick a page type, describe what you want, optionally drop in a reference screenshot, and the module returns a complete PageBuilder-compatible HTML layout ready to save. Field-level buttons let you regenerate a headline, bullet list, or paragraph without leaving the panel.
 
+<p align="center">
+  <img src="docs/screenshots/pagebuilder-full-page-dialog.png" alt="Generate Full Page Content with AI — PageBuilder stage dialog with page-type preset, prompt, reference image upload, and raw-prompt toggle" />
+</p>
+
 ---
 
 ## 🚀 Need Custom Magento 2 Development?
@@ -96,12 +100,58 @@ Performance • SEO • Adobe Commerce Cloud
 - **Field-aware prompts** — the module passes field context (heading, subheading, CTA text, paragraph) so outputs match the slot
 - **Replace or append** — insert the generated text or append it to existing content
 - **Regenerate** — not happy with the result? Regenerate with one click, keeping your prompt
+- **Raw-prompt mode** — a *"Use my prompt as-is"* checkbox lets you bypass the built-in PageBuilder instructions when you need the LLM to follow your wording verbatim
+
+<p align="center">
+  <img src="docs/screenshots/product-field-dialog.png" alt="Per-field AI dialog on the Product edit form — generate a short description with optional image upload and raw-prompt toggle" />
+</p>
+
+### Product, Category & CMS AI Meta Generation
+
+Dedicated SEO panels on product, category, and CMS forms expose an **AI Meta Generation** section with saved-prompt selector, editable prompt box, reference image upload, and per-field AI buttons for Meta Title, Meta Keywords, Meta Description, OG Title, OG Description, and more. Placeholders like `{{name}}`, `{{sku}}`, `{{price}}`, `{{category}}`, `{{description}}` are resolved server-side against live product/category data before the prompt is sent.
+
+<p align="center">
+  <img src="docs/screenshots/product-ai-meta-panel.png" alt="Product admin form — AI Meta Generation panel with prompt selector, placeholders, and per-field AI buttons generating meta title, meta keywords, meta description, and Open Graph fields" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/category-ai-meta-panel.png" alt="Category admin form — AI Meta Generation panel with per-field AI buttons for OG Title, OG Description, Meta Title, and URL key" />
+</p>
 
 ### Saved Prompt Templates
 
 - **Reusable prompts** — save frequently used prompts (brand voice, tone guides, legal boilerplate) and pick them from a dropdown
-- **Per-page-type library** — each preset maintains its own set of saved prompts
+- **Per-entity library** — each entity type (product, category, CMS, PageBuilder) maintains its own set of saved prompts
 - **Team-friendly** — saved prompts persist across admin users, so your team shares one voice
+- **Default prompt per entity** — mark any saved prompt as default for its entity type; it loads automatically when opening the AI panel
+
+<p align="center">
+  <img src="docs/screenshots/ai-prompts-grid.png" alt="AI Prompts admin grid — manage reusable prompt templates per entity type with default and active flags" />
+</p>
+
+### Bulk Generation & Queue Scheduling
+
+Queue AI generation jobs for up to 500 entities at a time. The module uses Magento's native MessageQueue framework so large batches run asynchronously under `cron_consumers_runner` without blocking the admin. Results land in a *Generation Jobs* grid with draft → approved workflow, so you review AI output before anything touches your live catalog.
+
+<p align="center">
+  <img src="docs/screenshots/ai-settings-dashboard.png" alt="AI Settings dashboard — pending/processing/draft/approved/failed counters plus bulk generation form and cron/queue consumer setup instructions" />
+</p>
+
+### Request Audit Log
+
+Every prompt and response sent to OpenAI or Claude is persisted in a first-class admin grid — admin user, entity type, entity ID, target field, output format, provider, model, token count, latency, and the full prompt and response text. Ideal for debugging, cost tracking, compliance audits, and showing non-technical stakeholders what the AI is actually producing.
+
+<p align="center">
+  <img src="docs/screenshots/ai-request-logs.png" alt="AI Request Logs admin grid — every OpenAI/Claude call recorded with admin user, entity, format, provider, model, prompt/response sizes, tokens, latency, and per-row detail view" />
+</p>
+
+### AI Knowledge Base
+
+A structured knowledge base of **PageBuilder patterns, SEO rules, e-commerce content guidelines, accessibility guidance, and reusable HTML snippets** gets injected into AI prompts during generation. Ships with 500+ entries covering banner sliders, mega menus, responsive patterns, Core Web Vitals, schema markup, alt text rules, and more. Curate or extend per-brand from the admin.
+
+<p align="center">
+  <img src="docs/screenshots/ai-knowledge-base.png" alt="AI Knowledge Base admin grid — PageBuilder patterns, SEO rules, e-commerce guidelines, accessibility rules, and HTML snippets that get injected into AI prompts" />
+</p>
 
 ### AI Provider Flexibility
 
@@ -196,18 +246,23 @@ Open any CMS page — you should see an **AI Content** button on the PageBuilder
 
 Navigate to `Admin → Stores → Configuration → Panth Extensions → PageBuilder AI`:
 
+<p align="center">
+  <img src="docs/screenshots/admin-configuration.png" alt="System Configuration — Enable PageBuilder AI, AI provider (Anthropic Claude / OpenAI), API key, model, max tokens, temperature, monthly token budget, cache TTL, writing tone" />
+</p>
+
 | Setting | Default | Description |
 |---|---|---|
-| Enable PageBuilder AI | Yes | Master toggle for the AI Content button and inline AI buttons |
-| AI Provider | OpenAI | Choose OpenAI or Anthropic Claude (configured via Panth_AdvancedSEO) |
-| Default Model | gpt-4o-mini | Model used for generations unless overridden per prompt |
-| Allow Reference Images | Yes | Enable reference-image upload on the AI Content modal |
-| Max Image Size (MB) | 5 | Maximum allowed size for reference images |
-| Show Inline AI Buttons | Yes | Toggle inline AI buttons on text and textarea fields |
-| Default Page Type Preset | Homepage | Preset selected by default when opening the AI Content modal |
-| Saved Prompts | — | Manage reusable prompt templates |
+| Enable PageBuilder AI | Yes | Master toggle for the AI Content button and every inline AI button |
+| AI Provider | Anthropic Claude | Anthropic Claude or OpenAI — swap anytime |
+| OpenAI / Anthropic API Key | — | Your own API key; no Panth-hosted middleman |
+| Model | claude-sonnet-4-6 | e.g. `claude-sonnet-4-5-20241022`, `claude-opus-4-6`, `gpt-4o`, `gpt-4o-mini` |
+| Max Tokens | 8192 | Ceiling on tokens per AI request; higher values allow longer content |
+| Temperature | 0.7 | `0.0` = deterministic, `0.7` = balanced, `1.0` = creative |
+| Monthly Token Budget | 1 000 000 | Hard cap on tokens consumed per month across all requests; atomically enforced to prevent concurrent overspend |
+| Response Cache TTL | 2 592 000 (30 days) | Seconds to cache identical prompt→response pairs; set `0` to disable |
+| Writing Tone | professional | e.g. `professional`, `casual`, `enthusiastic`, `technical`, `luxury`, `friendly` |
 
-The AI provider itself (API key, base URL, rate limits) is configured under **Panth_AdvancedSEO → AI Provider**. If Advanced SEO is not installed, PageBuilder AI displays a friendly prompt to install it.
+If `Panth_AdvancedSEO` is installed and already has an AI provider configured, PageBuilder AI reuses those credentials automatically and the fields above can be left empty.
 
 ---
 

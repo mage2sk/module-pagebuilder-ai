@@ -1,31 +1,205 @@
 <?php
 /** @var \Panth\PageBuilderAi\Block\Adminhtml\AiSettings $block */
+
+$counts      = $block->getJobCounts();
+$productN    = $block->getEntityCount('product');
+$categoryN   = $block->getEntityCount('category');
+$cmsPageN    = $block->getEntityCount('cms_page');
+$storeOpts   = $block->getStoreOptions();
+$batchUrl    = $block->getGenerateBatchUrl();
+$jobsUrl     = $block->getJobsUrl();
+$configUrl   = $block->getConfigUrl();
+$formKey     = $block->getFormKey();
 ?>
-<div class="panth-pagebuilderai-ai-settings" style="padding: 20px;">
-    <h2><?= $block->escapeHtml(__('AI Content Generation Settings')) ?></h2>
+<style>
+    .panth-ai-dash { padding: 0 20px; }
+    .panth-ai-dash h2 { font-size: 20px; margin: 20px 0 10px; }
+    .panth-ai-dash h3 { font-size: 15px; margin: 0 0 10px; color: #303030; }
+    .panth-ai-dash .panth-ai-card {
+        background: #fff; border: 1px solid #e3e3e3; border-radius: 4px;
+        padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .panth-ai-dash .panth-ai-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;
+    }
+    .panth-ai-dash .panth-ai-stat {
+        background: #fafafa; border: 1px solid #eaeaea; border-radius: 4px;
+        padding: 12px 14px; text-align: center;
+    }
+    .panth-ai-dash .panth-ai-stat .num { font-size: 24px; font-weight: 600; color: #eb5202; }
+    .panth-ai-dash .panth-ai-stat .lbl { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .5px; }
+    .panth-ai-dash .panth-ai-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .panth-ai-dash label { font-weight: 500; min-width: 110px; }
+    .panth-ai-dash select, .panth-ai-dash input[type="text"], .panth-ai-dash textarea {
+        padding: 6px 8px; border: 1px solid #c2c2c2; border-radius: 3px; font-size: 13px;
+    }
+    .panth-ai-dash textarea { width: 100%; font-family: Consolas, Menlo, monospace; }
+    .panth-ai-dash .action-primary {
+        background: #eb5202; border-color: #eb5202; color: #fff;
+        padding: 7px 14px; border-radius: 3px; border: 1px solid #eb5202; cursor: pointer;
+    }
+    .panth-ai-dash .action-primary:hover { background: #ba3e00; border-color: #ba3e00; }
+    .panth-ai-dash .action-default {
+        padding: 7px 14px; border-radius: 3px; border: 1px solid #007bdb;
+        color: #007bdb; background: #fff; cursor: pointer; text-decoration: none; display: inline-block;
+    }
+    .panth-ai-dash .action-default:hover { background: #e8f4fb; }
+    .panth-ai-dash pre.panth-ai-cmd {
+        background: #272822; color: #f8f8f2; padding: 10px 12px; border-radius: 3px;
+        font-size: 12px; overflow-x: auto; margin: 8px 0;
+    }
+    .panth-ai-dash .panth-ai-muted { color: #7a7a7a; font-size: 12px; }
+    .panth-ai-dash .panth-ai-badge {
+        display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px;
+        background: #e8f4fb; color: #0076a4; margin-left: 6px;
+    }
+    .panth-ai-dash .panth-ai-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .panth-ai-dash .panth-ai-columns { grid-template-columns: 1fr; } }
+</style>
 
-    <p style="margin: 15px 0; color: #666;">
-        <?= $block->escapeHtml(__('Configure AI providers and generation settings for PageBuilder / meta content generation.')) ?>
-    </p>
+<div class="panth-ai-dash">
 
-    <div style="margin: 30px 0;">
-        <h3><?= $block->escapeHtml(__('Quick Links')) ?></h3>
-        <ul style="list-style: none; padding: 0; margin: 15px 0;">
-            <li style="margin: 10px 0;">
-                <a href="<?= $block->escapeUrl($block->getConfigUrl()) ?>" class="action-default">
-                    <span><?= $block->escapeHtml(__('Open System Configuration (AI Provider, API Keys, Model Settings)')) ?></span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div style="margin: 30px 0;">
-        <h3><?= $block->escapeHtml(__('AI Generation Jobs')) ?></h3>
-        <p style="color: #666; margin: 10px 0;">
-            <?= $block->escapeHtml(__('View and manage AI generation jobs from the listing below.')) ?>
+    <!-- Stats cards ----------------------------------------------------- -->
+    <div class="panth-ai-card">
+        <h3><?= $block->escapeHtml(__('Generation Queue Status')) ?></h3>
+        <div class="panth-ai-grid">
+            <div class="panth-ai-stat"><div class="num"><?= (int)$counts['pending'] ?></div><div class="lbl"><?= $block->escapeHtml(__('Pending')) ?></div></div>
+            <div class="panth-ai-stat"><div class="num"><?= (int)$counts['processing'] ?></div><div class="lbl"><?= $block->escapeHtml(__('Processing')) ?></div></div>
+            <div class="panth-ai-stat"><div class="num"><?= (int)$counts['draft'] ?></div><div class="lbl"><?= $block->escapeHtml(__('Draft (awaiting approval)')) ?></div></div>
+            <div class="panth-ai-stat"><div class="num"><?= (int)$counts['approved'] ?></div><div class="lbl"><?= $block->escapeHtml(__('Approved')) ?></div></div>
+            <div class="panth-ai-stat"><div class="num"><?= (int)$counts['failed'] ?></div><div class="lbl"><?= $block->escapeHtml(__('Failed')) ?></div></div>
+        </div>
+        <p style="margin: 14px 0 0;">
+            <a class="action-default" href="<?= $block->escapeUrl($jobsUrl) ?>"><?= $block->escapeHtml(__('Open Generation Jobs Grid')) ?></a>
+            <a class="action-default" href="<?= $block->escapeUrl($configUrl) ?>" style="margin-left:8px;"><?= $block->escapeHtml(__('Open System Configuration')) ?></a>
         </p>
-        <a href="<?= $block->escapeUrl($block->getJobsUrl()) ?>" class="action-default">
-            <span><?= $block->escapeHtml(__('View Generation Jobs')) ?></span>
-        </a>
     </div>
+
+    <div class="panth-ai-columns">
+
+        <!-- Bulk generation panel --------------------------------------- -->
+        <div class="panth-ai-card">
+            <h3>
+                <?= $block->escapeHtml(__('Bulk AI Generation')) ?>
+                <span class="panth-ai-badge"><?= $block->escapeHtml(__('Queued → Cron')) ?></span>
+            </h3>
+            <p class="panth-ai-muted" style="margin-bottom:12px;">
+                <?= $block->escapeHtml(__('Queues a batch job that the message-queue consumer will process asynchronously. Results appear in the Generation Jobs grid with status "draft" so you can review before approving.')) ?>
+            </p>
+
+            <form method="POST" action="<?= $block->escapeUrl($batchUrl) ?>" id="panth-ai-batch-form">
+                <input type="hidden" name="form_key" value="<?= $block->escapeHtmlAttr($formKey) ?>"/>
+
+                <div class="panth-ai-row">
+                    <label for="panth-ai-entity-type"><?= $block->escapeHtml(__('Entity Type')) ?></label>
+                    <select name="entity_type" id="panth-ai-entity-type">
+                        <option value="product">
+                            <?= $block->escapeHtml(__('Products (%1 total)', $productN)) ?>
+                        </option>
+                        <option value="category">
+                            <?= $block->escapeHtml(__('Categories (%1 total)', $categoryN)) ?>
+                        </option>
+                        <option value="cms_page">
+                            <?= $block->escapeHtml(__('CMS Pages (%1 active)', $cmsPageN)) ?>
+                        </option>
+                    </select>
+                </div>
+
+                <div class="panth-ai-row">
+                    <label for="panth-ai-store"><?= $block->escapeHtml(__('Store View')) ?></label>
+                    <select name="store_id" id="panth-ai-store">
+                        <?php foreach ($storeOpts as $opt): ?>
+                            <option value="<?= (int)$opt['value'] ?>">
+                                <?= $block->escapeHtml($opt['label']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="panth-ai-row" style="align-items:flex-start;">
+                    <label for="panth-ai-ids" style="margin-top:6px;"><?= $block->escapeHtml(__('Entity IDs')) ?></label>
+                    <textarea name="ids_raw" id="panth-ai-ids" rows="4" placeholder="<?= $block->escapeHtmlAttr(__('e.g. 1, 2, 3 or one ID per line')) ?>"></textarea>
+                </div>
+
+                <div class="panth-ai-row">
+                    <span style="min-width:110px;"></span>
+                    <button type="submit" class="action-primary" id="panth-ai-batch-submit">
+                        <?= $block->escapeHtml(__('Queue Generation Job')) ?>
+                    </button>
+                    <span class="panth-ai-muted">
+                        <?= $block->escapeHtml(__('Max 500 IDs per job. Leave empty to abort.')) ?>
+                    </span>
+                </div>
+            </form>
+
+            <script>
+                (function () {
+                    var form = document.getElementById('panth-ai-batch-form');
+                    if (!form) return;
+                    form.addEventListener('submit', function (e) {
+                        var ta = document.getElementById('panth-ai-ids');
+                        var raw = (ta.value || '').trim();
+                        if (!raw) {
+                            e.preventDefault();
+                            alert('<?= $block->escapeJs(__('Please provide at least one entity ID.')) ?>');
+                            return;
+                        }
+                        var ids = raw.split(/[\s,;]+/).map(function (x) { return parseInt(x, 10); })
+                                     .filter(function (n) { return n > 0; }).slice(0, 500);
+                        if (!ids.length) {
+                            e.preventDefault();
+                            alert('<?= $block->escapeJs(__('No valid numeric IDs found.')) ?>');
+                            return;
+                        }
+                        // Strip existing ids[] inputs, then append one hidden input per ID.
+                        Array.prototype.slice.call(form.querySelectorAll('input[name="ids[]"]')).forEach(function (n) { n.remove(); });
+                        ids.forEach(function (id) {
+                            var inp = document.createElement('input');
+                            inp.type = 'hidden';
+                            inp.name = 'ids[]';
+                            inp.value = String(id);
+                            form.appendChild(inp);
+                        });
+                    });
+                })();
+            </script>
+        </div>
+
+        <!-- Scheduling / cron panel ------------------------------------- -->
+        <div class="panth-ai-card">
+            <h3>
+                <?= $block->escapeHtml(__('Scheduling & Queue Consumer')) ?>
+            </h3>
+            <p class="panth-ai-muted" style="margin-bottom:8px;">
+                <?= $block->escapeHtml(__('Batch jobs are dispatched to topic %1. A Magento queue consumer processes them. When the cron_consumers_runner job fires (every minute) it starts the consumer if it is not already running.', 'panth_pagebuilderai.generate_meta')) ?>
+            </p>
+
+            <p style="margin: 10px 0 4px;"><strong><?= $block->escapeHtml(__('Automatic (recommended): enable cron_consumers_runner')) ?></strong></p>
+            <p class="panth-ai-muted" style="margin:0 0 6px;">
+                <?= $block->escapeHtml(__('Add to app/etc/env.php (or deploy:mode:set) so the consumer runs under cron:')) ?>
+            </p>
+            <pre class="panth-ai-cmd">'cron_consumers_runner' =&gt; [
+    'cron_run' =&gt; true,
+    'max_messages' =&gt; 500,
+    'consumers' =&gt; [
+        'panth_pagebuilderai.generate_meta.consumer',
+    ],
+],</pre>
+
+            <p style="margin: 12px 0 4px;"><strong><?= $block->escapeHtml(__('Manual (one-off or dev)')) ?></strong></p>
+            <pre class="panth-ai-cmd">bin/magento queue:consumers:start panth_pagebuilderai.generate_meta.consumer --max-messages=500</pre>
+
+            <p style="margin: 12px 0 4px;"><strong><?= $block->escapeHtml(__('Scheduled / at a specific time')) ?></strong></p>
+            <p class="panth-ai-muted" style="margin:0;">
+                <?= $block->escapeHtml(__('Set a Magento cron expression for the consumer by adding the topic to cron_consumers_runner as above, then schedule the system cron itself (crontab -e) to only run bin/magento cron:run during your maintenance window:')) ?>
+            </p>
+            <pre class="panth-ai-cmd"># Run Magento cron at 02:00 every night
+0 2 * * * /usr/bin/php /var/www/bin/magento cron:run 2&gt;&amp;1</pre>
+
+            <p class="panth-ai-muted" style="margin: 6px 0 0;">
+                <?= $block->escapeHtml(__('Tip: while a job is pending, the queue consumer may show status "processing". Refresh this page for live counts.')) ?>
+            </p>
+        </div>
+    </div>
+
 </div>

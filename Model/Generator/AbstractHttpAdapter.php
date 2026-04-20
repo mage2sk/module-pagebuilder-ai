@@ -4,9 +4,11 @@ declare(strict_types=1);
 namespace Panth\PageBuilderAi\Model\Generator;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Panth\PageBuilderAi\Model\RequestLogger;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -314,6 +316,7 @@ abstract class AbstractHttpAdapter
             return ['status' => 0, 'body' => '{"error":"Request blocked: disallowed API host"}'];
         }
 
+        $startedAt = microtime(true);
         $attempt = 0;
         $lastStatus = 0;
         $lastBody = '';
@@ -362,6 +365,12 @@ abstract class AbstractHttpAdapter
             }
 
             if ($lastStatus >= 200 && $lastStatus < 300) {
+                $this->auditLog(
+                    payload: $payload,
+                    status: $lastStatus,
+                    body: $lastBody,
+                    latencyMs: (int) round((microtime(true) - $startedAt) * 1000)
+                );
                 return ['status' => $lastStatus, 'body' => $lastBody];
             }
             if ($lastStatus === 429 || $lastStatus >= 500 || $lastStatus === 0) {
@@ -370,7 +379,87 @@ abstract class AbstractHttpAdapter
             }
             break;
         }
+        $this->auditLog(
+            payload: $payload,
+            status: $lastStatus,
+            body: $lastBody,
+            latencyMs: (int) round((microtime(true) - $startedAt) * 1000)
+        );
         return ['status' => $lastStatus, 'body' => $lastBody];
+    }
+
+    /**
+     * Persist the raw outbound + inbound payloads to the request log.
+     *
+     * Fire-and-forget: the logger swallows its own errors, so no code path
+     * that writes to an AI provider can silently skip being audited.
+     */
+    private function auditLog(array $payload, int $status, string $body, int $latencyMs): void
+    {
+        try {
+            $logger = ObjectManager::getInstance()->get(RequestLogger::class);
+        } catch (\Throwable) {
+            return;
+        }
+
+        // Best-effort extraction of the textual prompt from the outbound payload
+        // (OpenAI: messages[].content; Claude: messages[].content).
+        $prompt = '';
+        $imageCount = 0;
+        foreach (($payload['messages'] ?? []) as $msg) {
+            $content = $msg['content'] ?? '';
+            if (is_string($content)) {
+                $prompt .= $content . "\n";
+            } elseif (is_array($content)) {
+                foreach ($content as $part) {
+                    if (is_array($part)) {
+                        if (($part['type'] ?? '') === 'text') {
+                            $prompt .= (string) ($part['text'] ?? '') . "\n";
+                        } elseif (($part['type'] ?? '') === 'image' || ($part['type'] ?? '') === 'image_url') {
+                            $imageCount++;
+                        }
+                    }
+                }
+            }
+        }
+        if (!empty($payload['system']) && is_string($payload['system'])) {
+            $prompt = $payload['system'] . "\n\n" . $prompt;
+        }
+
+        // Extract the model's text response for the "response" column.
+        $response = $body;
+        $tokens = null;
+        $decoded = json_decode($body, true);
+        if (is_array($decoded)) {
+            if (isset($decoded['choices'][0]['message']['content'])) {
+                $response = (string) $decoded['choices'][0]['message']['content'];
+                $tokens = isset($decoded['usage']['total_tokens']) ? (int) $decoded['usage']['total_tokens'] : null;
+            } elseif (isset($decoded['content']) && is_array($decoded['content'])) {
+                $response = '';
+                foreach ($decoded['content'] as $block) {
+                    if (is_array($block) && ($block['type'] ?? '') === 'text') {
+                        $response .= (string) ($block['text'] ?? '');
+                    }
+                }
+                if (isset($decoded['usage']['input_tokens']) || isset($decoded['usage']['output_tokens'])) {
+                    $tokens = (int) ($decoded['usage']['input_tokens'] ?? 0) + (int) ($decoded['usage']['output_tokens'] ?? 0);
+                }
+            }
+        }
+
+        $success = $status >= 200 && $status < 300;
+
+        $logger->record([
+            'prompt'        => trim($prompt) !== '' ? trim($prompt) : json_encode($payload, JSON_UNESCAPED_UNICODE),
+            'response'      => $response !== '' ? $response : $body,
+            'image_count'   => $imageCount,
+            'success'       => $success,
+            'http_status'   => (string) $status,
+            'error_message' => $success ? null : substr($body, 0, 500),
+            'tokens_used'   => $tokens,
+            'latency_ms'    => $latencyMs,
+            'output_format' => 'json',
+        ]);
     }
 
     /**

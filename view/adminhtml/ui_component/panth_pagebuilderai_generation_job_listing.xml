@@ -153,5 +153,36 @@
                 <dateFormat>MMM d, y h:mm a</dateFormat>
             </settings>
         </column>
+        <column name="store_id" sortOrder="96">
+            <settings>
+                <label translate="true">Store ID</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="prompt_id" sortOrder="97">
+            <settings>
+                <label translate="true">Prompt ID</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="created_by" sortOrder="98">
+            <settings>
+                <label translate="true">Created By (admin id)</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="error_message" sortOrder="99">
+            <settings>
+                <label translate="true">Error</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Panth\PageBuilderAi\Ui\Component\Listing\GenerationJobActions" sortOrder="200">
+            <settings>
+                <indexField>job_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>110</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
     </columns>
 </listing>
