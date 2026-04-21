@@ -22,6 +22,14 @@
 
 Write a CMS page or product description in seconds — pick a page type, describe what you want, optionally drop in a reference screenshot, and the module returns a complete PageBuilder-compatible HTML layout ready to save. Field-level buttons let you regenerate a headline, bullet list, or paragraph without leaving the panel.
 
+### Live walkthrough
+
+End-to-end demo on a Category edit screen — open the AI Meta panel, fill in a prompt, generate OG title, meta title, meta description, and URL key in one click.
+
+<p align="center">
+  <img src="docs/screenshots/demo.gif" alt="Panth PageBuilder AI demo — per-field AI buttons on the Default Category edit form generating meta title, meta description, OG title, OG description, and URL key in sequence" />
+</p>
+
 <p align="center">
   <img src="docs/screenshots/pagebuilder-full-page-dialog.png" alt="Generate Full Page Content with AI — PageBuilder stage dialog with page-type preset, prompt, reference image upload, and raw-prompt toggle" />
 </p>
