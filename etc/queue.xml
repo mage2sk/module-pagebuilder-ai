@@ -2,9 +2,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/queue.xsd">
     <broker topic="panth_pagebuilderai.generate_meta" exchange="panth_pagebuilderai.exchange" type="db">
+        <!--
+            consumerInstance was set here, but BulkGenerateConsumer is a
+            lightweight handler (no ConsumerInterface impl). Magento 2.4.x
+            rejects that combination on every consumers_runner cron tick.
+            Removed; the framework-default consumer wraps `handler`.
+        -->
         <queue name="panth_pagebuilderai.generate_meta.q"
                consumer="panth_pagebuilderai.generate_meta.consumer"
-               consumerInstance="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer"
                handler="Panth\PageBuilderAi\Model\Queue\BulkGenerateConsumer::process"/>
     </broker>
 </config>
