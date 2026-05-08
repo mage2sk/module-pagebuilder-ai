@@ -13,6 +13,9 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
+        <job name="panth_pagebuilderai_send_heartbeat" instance="Panth\PageBuilderAi\Cron\SendHeartbeat" method="execute">
+            <schedule>4 4 * * *</schedule>
+        </job>
         <job name="panth_pagebuilderai_drain_queue"
              instance="Panth\PageBuilderAi\Cron\DrainGenerationQueue"
              method="execute">
