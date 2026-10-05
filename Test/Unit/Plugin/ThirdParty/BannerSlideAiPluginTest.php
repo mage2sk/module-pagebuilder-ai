@@ -1,0 +1,53 @@
+<?php
+declare(strict_types=1);
+
+namespace Panth\PageBuilderAi\Test\Unit\Plugin\ThirdParty;
+
+use Panth\PageBuilderAi\Model\Admin\AiButtonRenderer;
+use Panth\PageBuilderAi\Plugin\ThirdParty\BannerSlideAiPlugin;
+use PHPUnit\Framework\TestCase;
+
+class BannerSlideAiPluginTest extends TestCase
+{
+    public function testUnavailableRendererLeavesMetaUntouched(): void
+    {
+        $renderer = $this->createMock(AiButtonRenderer::class);
+        $renderer->method('isAvailable')->willReturn(false);
+        $renderer->expects($this->never())->method('buildContainerMeta');
+
+        $meta = ['content' => ['children' => ['x' => []]]];
+
+        $this->assertSame($meta, (new BannerSlideAiPlugin($renderer))->afterGetMeta(new \stdClass(), $meta));
+    }
+
+    public function testContainerIsInjectedWithFieldConfiguration(): void
+    {
+        $captured = [];
+        $renderer = $this->createMock(AiButtonRenderer::class);
+        $renderer->method('isAvailable')->willReturn(true);
+        $renderer->expects($this->once())->method('buildContainerMeta')->willReturnCallback(
+            static function (...$args) use (&$captured) {
+                $captured = $args;
+                return ['container' => true];
+            }
+        );
+
+        $result = (new BannerSlideAiPlugin($renderer))->afterGetMeta(new \stdClass(), ['content' => ['children' => ['x' => []]]]);
+
+        $this->assertSame(['x' => [], 'ai_generate_container' => ['container' => true]], $result['content']['children']);
+        [$entityType, $idField, $storeField, $fieldMap, $perField, $suffix, $help, $sortOrder] = $captured;
+        $this->assertSame('banner', $entityType);
+        $this->assertSame('slide_id', $idField);
+        $this->assertSame('store_id', $storeField);
+        $this->assertSame('banner', $suffix);
+        $this->assertSame(5, $sortOrder);
+        $this->assertNotSame('', $help);
+        $this->assertSame(['title', 'content_html', 'alt_text'], array_keys($fieldMap));
+        $this->assertSame(array_keys($fieldMap), array_keys($perField));
+        foreach ($perField as $field => $config) {
+            $this->assertSame($field, $config['field']);
+            $this->assertNotSame('', $config['label']);
+            $this->assertNotSame('', $config['prompt']);
+        }
+    }
+}

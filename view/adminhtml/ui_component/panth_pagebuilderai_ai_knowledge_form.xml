@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">panth_pagebuilderai_ai_knowledge_form.panth_pagebuilderai_ai_knowledge_form_data_source</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="delete" class="Panth\PageBuilderAi\Block\Adminhtml\GenericDeleteButton"/>
+            <button name="save_and_continue" class="Panth\PageBuilderAi\Block\Adminhtml\AiKnowledge\Edit\SaveAndContinueButton"/>
+            <button name="save" class="Panth\PageBuilderAi\Block\Adminhtml\AiKnowledge\Edit\SaveButton"/>
+            <button name="back" class="Panth\PageBuilderAi\Block\Adminhtml\AiKnowledge\Edit\BackButton"/>
+        </buttons>
+        <namespace>panth_pagebuilderai_ai_knowledge_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>panth_pagebuilderai_ai_knowledge_form.panth_pagebuilderai_ai_knowledge_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="panth_pagebuilderai_ai_knowledge_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="panth_pagebuilderai/aiknowledge/save"/>
+        </settings>
+        <dataProvider class="Panth\PageBuilderAi\Ui\Component\Form\DataProvider\AiKnowledgeFormDataProvider" name="panth_pagebuilderai_ai_knowledge_form_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>knowledge_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <!-- ========== General ========== -->
+    <fieldset name="general" sortOrder="10">
+        <settings>
+            <label translate="true">General</label>
+        </settings>
+        <field name="knowledge_id" formElement="input">
+            <settings>
+                <visible>false</visible>
+                <dataType>text</dataType>
+            </settings>
+        </field>
+        <field name="title" formElement="input" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Title</label>
+                <dataScope>title</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="category" formElement="select" sortOrder="20">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Category</label>
+                <dataScope>category</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Panth\PageBuilderAi\Model\Source\AiKnowledgeCategory"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="subcategory" formElement="input" sortOrder="30">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Subcategory</label>
+                <dataScope>subcategory</dataScope>
+                <notice translate="true">E.g. row_component, heading_component, product_description, meta_title, etc.</notice>
+            </settings>
+        </field>
+        <field name="tags" formElement="input" sortOrder="40">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Tags</label>
+                <dataScope>tags</dataScope>
+                <notice translate="true">Comma-separated tags used for matching knowledge entries to AI generation context. E.g. "product, description, features, seo"</notice>
+            </settings>
+        </field>
+        <field name="is_active" formElement="checkbox" sortOrder="50">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Active</label>
+                <dataScope>is_active</dataScope>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <prefer>toggle</prefer>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="sort_order" formElement="input" sortOrder="60">
+            <settings>
+                <dataType>number</dataType>
+                <label translate="true">Sort Order</label>
+                <dataScope>sort_order</dataScope>
+                <notice translate="true">Lower values appear first. Entries with lower sort order are prioritized when selecting knowledge for AI prompts.</notice>
+            </settings>
+        </field>
+    </fieldset>
+
+    <!-- ========== Content ========== -->
+    <fieldset name="content_fieldset" sortOrder="20">
+        <settings>
+            <label translate="true">Knowledge Content</label>
+        </settings>
+        <field name="content" formElement="textarea" sortOrder="10">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Content</label>
+                <dataScope>content</dataScope>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+                <notice translate="true">The actual knowledge text that will be injected into AI prompts as guidelines. Be specific and actionable. Include HTML patterns, character limits, best practices, etc.</notice>
+            </settings>
+            <formElements>
+                <textarea>
+                    <settings>
+                        <rows>15</rows>
+                        <cols>80</cols>
+                    </settings>
+                </textarea>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

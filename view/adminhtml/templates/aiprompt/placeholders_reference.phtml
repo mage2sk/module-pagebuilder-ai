@@ -1,0 +1,25 @@
+<?php /** @var \Magento\Backend\Block\Template $block */ ?>
+<div style="padding:10px 0;font-size:13px;line-height:1.7;">
+    <p style="margin:0 0 10px;">
+        <?= $block->escapeHtml(__('Use the following placeholders in your prompt template. They will be replaced with actual entity data before being sent to the AI provider.')) ?>
+    </p>
+    <table style="border-collapse:collapse;width:100%;max-width:700px;">
+        <thead>
+            <tr style="background:#f5f5f5;">
+                <th style="border:1px solid #ddd;padding:8px 12px;text-align:left;font-weight:600;"><?= $block->escapeHtml(__('Placeholder')) ?></th>
+                <th style="border:1px solid #ddd;padding:8px 12px;text-align:left;font-weight:600;"><?= $block->escapeHtml(__('Description')) ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{name}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Entity name (product name, category name, or CMS page title)')) ?></td></tr>
+            <tr style="background:#fafafa;"><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{sku}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Product SKU (products only)')) ?></td></tr>
+            <tr><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{price}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Product price (products only)')) ?></td></tr>
+            <tr style="background:#fafafa;"><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{brand}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Brand or manufacturer name (products only)')) ?></td></tr>
+            <tr><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{category}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Primary category name (products only)')) ?></td></tr>
+            <tr style="background:#fafafa;"><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{short_description}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Short description (HTML stripped)')) ?></td></tr>
+            <tr><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{description}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Full description (HTML stripped, max 1200 characters)')) ?></td></tr>
+            <tr style="background:#fafafa;"><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{store_name}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Store name from Magento configuration')) ?></td></tr>
+            <tr><td style="border:1px solid #ddd;padding:6px 12px;"><code>{{url}}</code></td><td style="border:1px solid #ddd;padding:6px 12px;"><?= $block->escapeHtml(__('Entity URL')) ?></td></tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">panth_pagebuilderai_generation_job_listing.panth_pagebuilderai_generation_job_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>panth_pagebuilderai_generation_job_listing_columns</spinner>
+        <deps>
+            <dep>panth_pagebuilderai_generation_job_listing.panth_pagebuilderai_generation_job_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="panth_pagebuilderai_generation_job_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">job_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <dataProvider class="Panth\PageBuilderAi\Ui\GenerationJobGridDataProvider" name="panth_pagebuilderai_generation_job_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>job_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="approve">
+                <settings>
+                    <confirm>
+                        <message translate="true">Are you sure you want to approve selected jobs?</message>
+                        <title translate="true">Approve Jobs</title>
+                    </confirm>
+                    <url path="panth_pagebuilderai/aiSettings/approveBatch"/>
+                    <type>approve</type>
+                    <label translate="true">Approve Selected</label>
+                </settings>
+            </action>
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <message translate="true">Are you sure you want to delete selected jobs?</message>
+                        <title translate="true">Delete Jobs</title>
+                    </confirm>
+                    <url path="panth_pagebuilderai/aiSettings/deleteJob"/>
+                    <type>delete</type>
+                    <label translate="true">Delete Selected</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="panth_pagebuilderai_generation_job_listing_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>job_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="job_id" sortOrder="10">
+            <settings>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="uuid" sortOrder="20">
+            <settings>
+                <label translate="true">Batch UUID</label>
+                <fieldClass>
+                    <class name="panth-ai-cell-wrap">true</class>
+                </fieldClass>
+            </settings>
+        </column>
+        <column name="entity_type" sortOrder="30">
+            <settings>
+                <label translate="true">Entity Type</label>
+                <dataType>select</dataType>
+                <options>
+                    <option name="product" xsi:type="array">
+                        <item name="value" xsi:type="string">product</item>
+                        <item name="label" xsi:type="string">Product</item>
+                    </option>
+                    <option name="category" xsi:type="array">
+                        <item name="value" xsi:type="string">category</item>
+                        <item name="label" xsi:type="string">Category</item>
+                    </option>
+                    <option name="cms_page" xsi:type="array">
+                        <item name="value" xsi:type="string">cms_page</item>
+                        <item name="label" xsi:type="string">CMS Page</item>
+                    </option>
+                </options>
+            </settings>
+        </column>
+        <column name="total" sortOrder="40">
+            <settings>
+                <label translate="true">Total Entities</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="processed" sortOrder="50">
+            <settings>
+                <label translate="true">Processed</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="failed" sortOrder="60">
+            <settings>
+                <label translate="true">Failed</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="status" sortOrder="70" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <label translate="true">Status</label>
+                <dataType>select</dataType>
+                <options>
+                    <option name="pending" xsi:type="array">
+                        <item name="value" xsi:type="string">pending</item>
+                        <item name="label" xsi:type="string">Pending</item>
+                    </option>
+                    <option name="processing" xsi:type="array">
+                        <item name="value" xsi:type="string">processing</item>
+                        <item name="label" xsi:type="string">Processing</item>
+                    </option>
+                    <option name="draft" xsi:type="array">
+                        <item name="value" xsi:type="string">draft</item>
+                        <item name="label" xsi:type="string">Draft (ready for review)</item>
+                    </option>
+                    <option name="approved" xsi:type="array">
+                        <item name="value" xsi:type="string">approved</item>
+                        <item name="label" xsi:type="string">Approved</item>
+                    </option>
+                    <option name="failed" xsi:type="array">
+                        <item name="value" xsi:type="string">failed</item>
+                        <item name="label" xsi:type="string">Failed</item>
+                    </option>
+                </options>
+            </settings>
+        </column>
+        <column name="provider" sortOrder="80">
+            <settings>
+                <label translate="true">AI Provider</label>
+            </settings>
+        </column>
+        <column name="tokens_used" sortOrder="85">
+            <settings>
+                <label translate="true">Tokens Used</label>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date" sortOrder="90">
+            <settings>
+                <label translate="true">Created</label>
+                <dateFormat>MMM d, y h:mm a</dateFormat>
+            </settings>
+        </column>
+        <column name="updated_at" class="Magento\Ui\Component\Listing\Columns\Date" sortOrder="95">
+            <settings>
+                <label translate="true">Updated</label>
+                <visible>false</visible>
+                <dateFormat>MMM d, y h:mm a</dateFormat>
+            </settings>
+        </column>
+        <column name="store_id" sortOrder="96">
+            <settings>
+                <label translate="true">Store ID</label>
+                <visible>false</visible>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="prompt_id" sortOrder="97">
+            <settings>
+                <label translate="true">Prompt ID</label>
+                <visible>false</visible>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="created_by" sortOrder="98">
+            <settings>
+                <label translate="true">Created By (admin id)</label>
+                <visible>false</visible>
+                <dataType>number</dataType>
+            </settings>
+        </column>
+        <column name="error_message" sortOrder="99">
+            <settings>
+                <label translate="true">Error</label>
+                <visible>false</visible>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Panth\PageBuilderAi\Ui\Component\Listing\GenerationJobActions" sortOrder="200">
+            <settings>
+                <indexField>job_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>110</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

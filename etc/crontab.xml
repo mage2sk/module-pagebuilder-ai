@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+    Fallback scheduler for the bulk-generation queue consumer.
+
+    The recommended setup is to list `panth_pagebuilderai.generate_meta.consumer`
+    under `cron_consumers_runner.consumers` in app/etc/env.php - Magento's
+    built-in cron job will then keep it alive every minute.
+
+    This crontab entry is a safety net for installs that have *not* configured
+    cron_consumers_runner: every 5 minutes it processes at most 50 queued jobs
+    for at most 150 seconds, never waits for new messages, and skips the run
+    while a previous run still holds its lock.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="panth_pagebuilderai_drain_queue"
+             instance="Panth\PageBuilderAi\Cron\DrainGenerationQueue"
+             method="execute">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+    </group>
+</config>

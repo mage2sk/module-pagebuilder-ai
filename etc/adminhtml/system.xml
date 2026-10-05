@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="panth_pagebuilderai" translate="label" sortOrder="145" showInDefault="1" showInWebsite="0" showInStore="0">
+            <class>separator-top</class>
+            <label>PageBuilder AI</label>
+            <tab>panth</tab>
+            <resource>Panth_PageBuilderAi::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable PageBuilder AI</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Add AI content generation buttons to the Magento PageBuilder toolbar and edit panels.</comment>
+                </field>
+            </group>
+            <group id="ai" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>AI Provider</label>
+                <comment><![CDATA[Configure the AI provider and API key used for content generation. Requests are sent only when an admin clicks a generate button or queues a bulk generation job.]]></comment>
+                <field id="provider" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>AI Provider</label>
+                    <source_model>Panth\PageBuilderAi\Model\Config\Source\AiProvider</source_model>
+                    <comment>Select the AI provider for content generation.</comment>
+                </field>
+                <field id="openai_api_key" translate="label comment" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>OpenAI API Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[Get your key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a>]]></comment>
+                    <depends>
+                        <field id="provider">openai</field>
+                    </depends>
+                </field>
+                <field id="openai_model" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>OpenAI Model</label>
+                    <comment>e.g. gpt-4o, gpt-4o-mini, gpt-4-turbo</comment>
+                    <depends>
+                        <field id="provider">openai</field>
+                    </depends>
+                </field>
+                <field id="claude_api_key" translate="label comment" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Anthropic API Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment><![CDATA[Get your key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>]]></comment>
+                    <depends>
+                        <field id="provider">claude</field>
+                    </depends>
+                </field>
+                <field id="claude_model" translate="label comment" type="text" sortOrder="35" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Claude Model</label>
+                    <comment>e.g. claude-sonnet-4-6, claude-opus-4-6. Default: claude-sonnet-4-6</comment>
+                    <depends>
+                        <field id="provider">claude</field>
+                    </depends>
+                </field>
+                <field id="max_tokens" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Max Tokens</label>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <comment>Maximum tokens per AI request. Default: 8192. Higher values allow longer content generation.</comment>
+                </field>
+                <field id="temperature" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Temperature</label>
+                    <validate>validate-number validate-number-range number-range-0-1</validate>
+                    <comment>0.0 = deterministic, 0.7 = balanced, 1.0 = creative. Default: 0.7</comment>
+                </field>
+                <field id="monthly_budget" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Monthly Token Budget</label>
+                    <validate>validate-digits</validate>
+                    <comment><![CDATA[Maximum tokens per month for bulk meta generation jobs. 1,000,000 tokens is enough to generate meta for ~3,000-5,000 products. A value of 0 rejects bulk generation requests. Budget is enforced atomically to prevent overspend from concurrent requests. Interactive requests from the Page Builder and form field AI buttons are logged in AI Request Logs but are not counted against this budget.]]></comment>
+                </field>
+                <field id="cache_ttl" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Response Cache TTL (seconds)</label>
+                    <validate>validate-digits</validate>
+                    <comment><![CDATA[How long to cache AI responses to avoid re-generating for the same prompt. Default: 2592000 (30 days). Set to 0 to disable caching (not recommended - increases API costs).]]></comment>
+                </field>
+                <field id="tone" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Writing Tone</label>
+                    <comment><![CDATA[The tone/style for generated text. Examples: <code>professional</code>, <code>casual</code>, <code>enthusiastic</code>, <code>technical</code>, <code>luxury</code>, <code>friendly</code>. This is added to the system prompt of interactive Page Builder and form field requests to guide the writing style.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

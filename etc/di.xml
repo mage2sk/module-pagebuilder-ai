@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- AI generator: factory dispatches on panth_pagebuilderai/ai/provider -->
+    <preference for="Panth\PageBuilderAi\Api\AiGeneratorInterface"
+                type="Panth\PageBuilderAi\Model\Generator\AdapterFactory"/>
+
+    <!-- Grid collection bindings: table + resource model -->
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_ai_prompt</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiPrompt</argument>
+        </arguments>
+    </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_ai_knowledge</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge</argument>
+        </arguments>
+    </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_seo_generation_job</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob</argument>
+        </arguments>
+    </type>
+    <type name="Panth\PageBuilderAi\Model\ResourceModel\RequestLog\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">panth_pagebuilderai_request_log</argument>
+            <argument name="resourceModel" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\RequestLog</argument>
+        </arguments>
+    </type>
+
+    <!-- UI grid data source registrations (must match the <dataSource name="..."> in the listing XMLs). -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="panth_pagebuilderai_ai_prompt_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiPrompt\Grid\Collection</item>
+                <item name="panth_pagebuilderai_ai_knowledge_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\AiKnowledge\Grid\Collection</item>
+                <item name="panth_pagebuilderai_generation_job_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\GenerationJob\Grid\Collection</item>
+                <item name="panth_pagebuilderai_request_log_listing_data_source" xsi:type="string">Panth\PageBuilderAi\Model\ResourceModel\RequestLog\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Panth\PageBuilderAi\Ui\AiPromptGridFulltextFilter" type="Panth\PageBuilderAi\Ui\Component\Listing\LikeFulltextFilter">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="name" xsi:type="string">main_table.name</item>
+                <item name="entity_type" xsi:type="string">main_table.entity_type</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiPromptGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Panth\PageBuilderAi\Ui\AiPromptGridFulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiPromptGridReporting" type="Magento\Framework\View\Element\UiComponent\DataProvider\Reporting">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">Panth\PageBuilderAi\Ui\AiPromptGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiPromptGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="reporting" xsi:type="object">Panth\PageBuilderAi\Ui\AiPromptGridReporting</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Panth\PageBuilderAi\Ui\AiKnowledgeGridFulltextFilter" type="Panth\PageBuilderAi\Ui\Component\Listing\LikeFulltextFilter">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="title" xsi:type="string">main_table.title</item>
+                <item name="category" xsi:type="string">main_table.category</item>
+                <item name="subcategory" xsi:type="string">main_table.subcategory</item>
+                <item name="tags" xsi:type="string">main_table.tags</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiKnowledgeGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Panth\PageBuilderAi\Ui\AiKnowledgeGridFulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiKnowledgeGridReporting" type="Magento\Framework\View\Element\UiComponent\DataProvider\Reporting">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">Panth\PageBuilderAi\Ui\AiKnowledgeGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\AiKnowledgeGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="reporting" xsi:type="object">Panth\PageBuilderAi\Ui\AiKnowledgeGridReporting</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Panth\PageBuilderAi\Ui\GenerationJobGridFulltextFilter" type="Panth\PageBuilderAi\Ui\Component\Listing\LikeFulltextFilter">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="uuid" xsi:type="string">main_table.uuid</item>
+                <item name="entity_type" xsi:type="string">main_table.entity_type</item>
+                <item name="status" xsi:type="string">main_table.status</item>
+                <item name="provider" xsi:type="string">main_table.provider</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\GenerationJobGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Panth\PageBuilderAi\Ui\GenerationJobGridFulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\GenerationJobGridReporting" type="Magento\Framework\View\Element\UiComponent\DataProvider\Reporting">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">Panth\PageBuilderAi\Ui\GenerationJobGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\GenerationJobGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="reporting" xsi:type="object">Panth\PageBuilderAi\Ui\GenerationJobGridReporting</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Panth\PageBuilderAi\Ui\RequestLogGridFulltextFilter" type="Panth\PageBuilderAi\Ui\Component\Listing\LikeFulltextFilter">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="admin_user" xsi:type="string">main_table.admin_user</item>
+                <item name="entity_type" xsi:type="string">main_table.entity_type</item>
+                <item name="target_field" xsi:type="string">main_table.target_field</item>
+                <item name="provider" xsi:type="string">main_table.provider</item>
+                <item name="model" xsi:type="string">main_table.model</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\RequestLogGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Panth\PageBuilderAi\Ui\RequestLogGridFulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\RequestLogGridReporting" type="Magento\Framework\View\Element\UiComponent\DataProvider\Reporting">
+        <arguments>
+            <argument name="filterPool" xsi:type="object">Panth\PageBuilderAi\Ui\RequestLogGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Panth\PageBuilderAi\Ui\RequestLogGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="reporting" xsi:type="object">Panth\PageBuilderAi\Ui\RequestLogGridReporting</argument>
+        </arguments>
+    </virtualType>
+</config>

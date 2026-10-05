@@ -1,0 +1,108 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$row      = (array) $block->getData('job_row');
+$entities = (array) $block->getData('entities');
+$results  = (array) $block->getData('results');
+if (!$row) { return; }
+
+$meta = [
+    ['label' => __('Job ID'),      'value' => $row['job_id'] ?? ''],
+    ['label' => __('Batch UUID'),  'value' => $row['uuid'] ?? ''],
+    ['label' => __('Entity type'), 'value' => $row['entity_type'] ?? ''],
+    ['label' => __('Store ID'),    'value' => $row['store_id'] ?? ''],
+    ['label' => __('Status'),      'value' => $row['status'] ?? ''],
+    ['label' => __('Total'),       'value' => (int)($row['total'] ?? 0)],
+    ['label' => __('Processed'),   'value' => (int)($row['processed'] ?? 0)],
+    ['label' => __('Failed'),      'value' => (int)($row['failed'] ?? 0)],
+    ['label' => __('Tokens used'), 'value' => (int)($row['tokens_used'] ?? 0)],
+    ['label' => __('Provider'),    'value' => $row['provider'] ?? ''],
+    ['label' => __('Prompt ID'),   'value' => $row['prompt_id'] ?? ''],
+    ['label' => __('Created by'),  'value' => $row['created_by'] ?? ''],
+    ['label' => __('Created'),     'value' => $row['created_at'] ?? ''],
+    ['label' => __('Updated'),     'value' => $row['updated_at'] ?? ''],
+];
+?>
+<style>
+    .panth-job-view { padding: 20px; }
+    .panth-job-view .panth-job-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 20px; margin-bottom: 18px; background:#fafafa; border:1px solid #e3e3e3; border-radius:4px; padding:14px 18px;}
+    .panth-job-view .panth-job-meta div { font-size:13px; }
+    .panth-job-view .panth-job-meta strong { color:#303030; min-width: 120px; display:inline-block; }
+    .panth-job-view h3 { font-size:15px; margin: 18px 0 8px; }
+    .panth-job-view table { width:100%; border-collapse:collapse; background:#fff; }
+    .panth-job-view th, .panth-job-view td { border:1px solid #e3e3e3; padding:8px 10px; text-align:left; font-size:13px; vertical-align:top; }
+    .panth-job-view th { background:#f5f5f5; font-weight:600; }
+    .panth-job-view .panth-job-status-pending   { color:#b97a00; }
+    .panth-job-view .panth-job-status-done      { color:#1a7f37; }
+    .panth-job-view .panth-job-status-failed    { color:#c00; }
+    .panth-job-view .panth-job-status-processed { color:#0366d6; }
+    .panth-job-view .panth-job-back { margin-bottom: 12px; }
+    .panth-job-view pre { background:#272822; color:#f8f8f2; padding:12px; border-radius:4px; font-size:12px; max-height: 260px; overflow:auto; white-space:pre-wrap; }
+</style>
+
+<div class="panth-job-view">
+    <p class="panth-job-back">
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getUrl('panth_pagebuilderai/aiSettings/jobs')) ?>">
+            &larr; <?= $escaper->escapeHtml(__('Back to AI Generation Jobs')) ?>
+        </a>
+    </p>
+
+    <h2><?= $escaper->escapeHtml(__('AI Generation Job #%1', $row['job_id'])) ?></h2>
+
+    <div class="panth-job-meta">
+        <?php foreach ($meta as $cell): ?>
+            <div><strong><?= $escaper->escapeHtml((string) $cell['label']) ?></strong> <?= $escaper->escapeHtml((string) $cell['value']) ?></div>
+        <?php endforeach; ?>
+    </div>
+
+    <?php if (!empty($row['error_message'])): ?>
+        <h3><?= $escaper->escapeHtml(__('Error Message')) ?></h3>
+        <pre><?= $escaper->escapeHtml((string) $row['error_message']) ?></pre>
+    <?php endif; ?>
+
+    <h3><?= $escaper->escapeHtml(__('Entities in this Job (%1)', count($entities))) ?></h3>
+    <?php if (empty($entities)): ?>
+        <p><em><?= $escaper->escapeHtml(__('No entity ids recorded for this job.')) ?></em></p>
+    <?php else: ?>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:80px;"><?= $escaper->escapeHtml(__('ID')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Name')) ?></th>
+                    <th style="width:120px;"><?= $escaper->escapeHtml(__('Result')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Draft title')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Draft description')) ?></th>
+                    <th style="width:90px;"><?= $escaper->escapeHtml(__('Action')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($entities as $e):
+                $result = $results[$e['id']] ?? null;
+                if ($result) {
+                    $statusLabel = __('Generated');
+                    $statusCls   = 'panth-job-status-done';
+                } else {
+                    $statusLabel = ($row['status'] ?? '') === 'failed' ? __('Failed') : __('Pending');
+                    $statusCls   = ($row['status'] ?? '') === 'failed' ? 'panth-job-status-failed' : 'panth-job-status-pending';
+                }
+            ?>
+                <tr>
+                    <td><?= (int) $e['id'] ?></td>
+                    <td><?= $escaper->escapeHtml((string) $e['name']) ?></td>
+                    <td class="<?= $escaper->escapeHtmlAttr($statusCls) ?>"><?= $escaper->escapeHtml((string) $statusLabel) ?></td>
+                    <td><?= $escaper->escapeHtml((string) ($result['draft_title'] ?? '')) ?></td>
+                    <td><?= $escaper->escapeHtml((string) ($result['draft_description'] ?? '')) ?></td>
+                    <td>
+                        <?php if (!empty($e['edit_url'])): ?>
+                            <a class="action-default" href="<?= $escaper->escapeUrl((string) $e['edit_url']) ?>" target="_blank">
+                                <?= $escaper->escapeHtml(__('Edit')) ?>
+                            </a>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>

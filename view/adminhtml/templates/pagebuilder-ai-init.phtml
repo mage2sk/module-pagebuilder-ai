@@ -1,0 +1,27 @@
+<?php
+/**
+ * Panth_PageBuilderAi initialiser script.
+ *
+ * Supports two modes:
+ *   1. Standalone - uses PageBuilderAi's own AI config and endpoint.
+ *   2. With AdvancedSEO - uses AdvancedSEO's AI backend for richer features.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Panth\PageBuilderAi\ViewModel\AiInit $viewModel
+ */
+
+$viewModel = $block->getData('view_model');
+if (!$viewModel instanceof \Panth\PageBuilderAi\ViewModel\AiInit || !$viewModel->isAvailable()) {
+    return;
+}
+
+$generateUrl  = $viewModel->getGenerateUrl();
+$savedPrompts = $viewModel->getSavedPrompts();
+$backend      = $viewModel->getActiveBackend();
+?>
+<script>
+window.panthPageBuilderAiUrl = '<?= $block->escapeJs($generateUrl) ?>';
+window.panthPageBuilderAiPrompts = <?= /* @noEscape */ json_encode($savedPrompts, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+window.panthPageBuilderAiBackend = '<?= $block->escapeJs($backend) ?>';
+</script>
+<script src="<?= $block->escapeUrl($block->getViewFileUrl('Panth_PageBuilderAi::js/pagebuilder-ai-toolbar.js')) ?>"></script>
